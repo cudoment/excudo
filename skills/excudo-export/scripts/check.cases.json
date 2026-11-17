@@ -1,0 +1,58 @@
+[
+  {
+    "name": "the file is current, titled, ignored and saved",
+    "expect": "pass",
+    "facts": {
+      "error": null,
+      "exports": [{ "name": "todo", "file": "todo.md", "state": "current", "retitle": [], "ignored": true },
+        { "name": "desk", "file": "~/Desktop/work.md", "state": "current", "retitle": [], "ignored": null }],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "no export is set",
+    "expect": "fail",
+    "facts": { "error": null, "exports": [], "unsaved": [] }
+  },
+  {
+    "name": "the setting does not read",
+    "expect": "fail",
+    "facts": { "error": "exports[0]: file is missing or not valid.", "exports": [], "unsaved": [] }
+  },
+  {
+    "name": "the file was changed by hand",
+    "expect": "fail",
+    "facts": {
+      "error": null,
+      "exports": [{ "name": "todo", "file": "todo.md", "state": "edited", "retitle": [], "ignored": true }],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "a task keeps its source's title",
+    "expect": "fail",
+    "facts": {
+      "error": null,
+      "exports": [{ "name": "todo", "file": "todo.md", "state": "current", "retitle": ["Work/Requests.md:4 Weekly report request · Team board"], "ignored": true }],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "git keeps the file",
+    "expect": "fail",
+    "facts": {
+      "error": null,
+      "exports": [{ "name": "todo", "file": "todo.md", "state": "current", "retitle": [], "ignored": false }],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "the new titles are not saved",
+    "expect": "fail",
+    "facts": {
+      "error": null,
+      "exports": [{ "name": "todo", "file": "todo.md", "state": "current", "retitle": [], "ignored": true }],
+      "unsaved": [" M notes/Work/Requests.md"]
+    }
+  }
+]

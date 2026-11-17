@@ -1,0 +1,27 @@
+# 홈
+
+## 생각과 계획
+
+```cudoc-embed
+sources: [/]
+render:
+  type: tree
+  open: 0
+  columns: [link, { value: { extractor: openTasks } }, summary]
+  order: [..., 완료]
+```
+
+```outline
+- {{query (and "방침:") {:title "방침" :collapsed? true}}}
+- {{query (and "생각:") {:title "생각" :collapsed? true}}}
+```
+
+## 업무와 자동화
+
+```outline
+- {{query (task DOING) {:title "진행 중"}}}
+- {{query (and (task TODO DOING) [[에이전트]]) {:title "맡긴 일"}}}
+- {{query (and (task WAITING) "검토:") {:title "검토 대기"}}}
+- {{query (and (task WAITING) (not "검토:")) {:title "대기" :collapsed? true}}}
+- {{query (and [[확인]]) {:title "확인할 것" :collapsed? true}}}
+```

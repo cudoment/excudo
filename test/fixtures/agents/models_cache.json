@@ -1,0 +1,8 @@
+{
+  "models": [
+    { "slug": "codex-third", "display_name": "Third", "visibility": "list", "priority": 30, "supported_reasoning_levels": [{ "effort": "high" }, { "effort": "xhigh" }] },
+    { "slug": "hidden", "visibility": "hide", "priority": 0 },
+    { "slug": "codex-top", "display_name": "Top", "visibility": "list", "priority": 1, "supported_reasoning_levels": [{ "effort": "high" }, { "effort": "xhigh" }] },
+    { "slug": "codex-second", "display_name": "Second", "visibility": "list", "priority": 10, "supported_reasoning_levels": [{ "effort": "high" }, { "effort": "xhigh" }], "upgrade": null }
+  ]
+}

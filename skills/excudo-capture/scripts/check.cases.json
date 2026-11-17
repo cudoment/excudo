@@ -1,0 +1,94 @@
+[
+  {
+    "name": "saved once in its node",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "matches": [
+        "projects/Website.md"
+      ],
+      "nodeFile": "notes/projects/Website.md",
+      "long": []
+    },
+    "args": [
+      "--text",
+      "Fix the footer",
+      "--node",
+      "Website"
+    ]
+  },
+  {
+    "name": "added twice",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "matches": [
+        "projects/Website.md",
+        "journals/2026_10_14.md"
+      ],
+      "nodeFile": "notes/projects/Website.md",
+      "long": []
+    },
+    "args": [
+      "--text",
+      "Fix the footer",
+      "--node",
+      "Website"
+    ]
+  },
+  {
+    "name": "in another node",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "matches": [
+        "projects/Reading.md"
+      ],
+      "nodeFile": "notes/projects/Website.md",
+      "long": []
+    },
+    "args": [
+      "--text",
+      "Fix the footer",
+      "--node",
+      "Website"
+    ]
+  },
+  {
+    "name": "not saved",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [
+        " M notes/projects/Website.md"
+      ],
+      "matches": [
+        "projects/Website.md"
+      ],
+      "nodeFile": "notes/projects/Website.md",
+      "long": []
+    }
+  },
+  {
+    "name": "summary above too long",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "matches": [
+        "projects/Website.md"
+      ],
+      "nodeFile": "notes/projects/Website.md",
+      "long": [
+        "Website: 130 characters"
+      ]
+    },
+    "args": [
+      "--node",
+      "Website"
+    ]
+  }
+]

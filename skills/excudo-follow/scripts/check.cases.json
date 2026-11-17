@@ -1,0 +1,100 @@
+[
+  {
+    "name": "every block brought in, removed thoughts settled, marked and saved",
+    "expect": "pass",
+    "facts": {
+      "status": "same",
+      "between": "---",
+      "removedMode": "settle",
+      "blocks": [{ "heading": "Site", "held": true }, { "heading": "Music", "held": true }],
+      "stillOpen": [],
+      "private": [],
+      "errors": [],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "no markers yet: nothing to follow, nothing to do",
+    "expect": "pass",
+    "facts": {
+      "status": "unmarked",
+      "between": "---",
+      "removedMode": "ask",
+      "blocks": [],
+      "stillOpen": [],
+      "private": [],
+      "errors": [],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "a block the memo does not hold",
+    "expect": "fail",
+    "facts": {
+      "status": "same",
+      "between": "---",
+      "removedMode": "ask",
+      "blocks": [{ "heading": "Site", "held": true }, { "heading": "Reading", "held": false }],
+      "stillOpen": [],
+      "private": [],
+      "errors": [],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "brought in but not marked",
+    "expect": "fail",
+    "facts": {
+      "status": "changed",
+      "between": "---",
+      "removedMode": "ask",
+      "blocks": [{ "heading": "Site", "held": true }],
+      "stillOpen": [],
+      "private": [],
+      "errors": [],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "a thought removed from the note is still an open task",
+    "expect": "fail",
+    "facts": {
+      "status": "same",
+      "between": "---",
+      "removedMode": "settle",
+      "blocks": [{ "heading": "Site", "held": true }],
+      "stillOpen": [{ "file": "notes/projects/Music.md", "line": 4 }],
+      "private": [],
+      "errors": [],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "a line that looks private landed in the memo",
+    "expect": "fail",
+    "facts": {
+      "status": "same",
+      "between": "---",
+      "removedMode": "ask",
+      "blocks": [{ "heading": "Site", "held": true }],
+      "stillOpen": [],
+      "private": ["notes/projects/Site.md"],
+      "errors": [],
+      "unsaved": []
+    }
+  },
+  {
+    "name": "not saved",
+    "expect": "fail",
+    "facts": {
+      "status": "same",
+      "between": "---",
+      "removedMode": "ask",
+      "blocks": [{ "heading": "Site", "held": true }],
+      "stillOpen": [],
+      "private": [],
+      "errors": [],
+      "unsaved": ["notes/projects/Site.md"]
+    }
+  }
+]

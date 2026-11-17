@@ -1,0 +1,22 @@
+[
+  {
+    "name": "each task taken has a report waiting for the owner",
+    "expect": "pass",
+    "facts": { "tasks": [{ "key": "q-0123456789", "found": true, "status": "waiting", "report": true }], "private": [], "errors": [], "unsaved": [] }
+  },
+  {
+    "name": "a task taken without a report",
+    "expect": "fail",
+    "facts": { "tasks": [{ "key": "q-0123456789", "found": true, "status": "ready", "report": false }], "private": [], "errors": [], "unsaved": [] }
+  },
+  {
+    "name": "a task closed by the agent",
+    "expect": "fail",
+    "facts": { "tasks": [{ "key": "q-0123456789", "found": false, "status": null, "report": false }], "private": [], "errors": [], "unsaved": [] }
+  },
+  {
+    "name": "a report line whose file is missing",
+    "expect": "fail",
+    "facts": { "tasks": [{ "key": "q-0123456789", "found": true, "status": "waiting", "report": false }], "private": [], "errors": [], "unsaved": [] }
+  }
+]

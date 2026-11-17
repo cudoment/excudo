@@ -1,0 +1,225 @@
+[
+  {
+    "name": "a reflection in summaries",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      }
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "corrections of skills recorded or asked",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "skillHits": [
+        {
+          "skill": "release-notes",
+          "case": "notes start without a heading",
+          "date": "2026-10-14",
+          "learned": true,
+          "recorded": true,
+          "asked": false
+        },
+        {
+          "skill": "release-notes",
+          "case": "notes leave out the merge dates",
+          "date": "2026-10-14",
+          "learned": true,
+          "recorded": false,
+          "asked": true
+        },
+        {
+          "skill": "excudo-distill",
+          "case": "a task moved without asking",
+          "date": "2026-10-14",
+          "learned": false,
+          "recorded": false,
+          "asked": true
+        }
+      ]
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "a correction of a skill neither recorded nor asked",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "skillHits": [
+        {
+          "skill": "release-notes",
+          "case": "notes start without a heading",
+          "date": "2026-10-14",
+          "learned": true,
+          "recorded": false,
+          "asked": false
+        }
+      ]
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "two corrections of one skill on one day, only one recorded",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "skillHits": [
+        {
+          "skill": "release-notes",
+          "case": "notes start without a heading",
+          "date": "2026-10-14",
+          "learned": true,
+          "recorded": true,
+          "asked": false
+        },
+        {
+          "skill": "release-notes",
+          "case": "notes leave out the merge dates",
+          "date": "2026-10-14",
+          "learned": true,
+          "recorded": false,
+          "asked": false
+        }
+      ]
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "a correction of a skill that names no case",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [
+        "release-dates.hits[0]: a correction of a skill needs case, the case that reproduces the mistake"
+      ],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "skillHits": [
+        {
+          "skill": "release-notes",
+          "case": null,
+          "date": "2026-10-14",
+          "learned": true,
+          "recorded": false,
+          "asked": false
+        }
+      ]
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "a request copied into a note",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": true,
+      "copied": [
+        "notes/Interests/Docs.md: “from now on always write the table first”"
+      ],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      }
+    }
+  },
+  {
+    "name": "a hit without a grade",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [
+        "docs.hits[0]: needs date, grade and note"
+      ],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      }
+    }
+  },
+  {
+    "name": "requests read but not marked",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": true,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": null
+      }
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "no interests node",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "shape": [],
+      "interests": false,
+      "copied": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      }
+    }
+  }
+]

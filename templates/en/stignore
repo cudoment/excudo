@@ -1,0 +1,5 @@
+// Syncthing leaves these on this computer. This file itself is not synced.
+.DS_Store
+views
+logseq/bak
+.*.excudo.tmp

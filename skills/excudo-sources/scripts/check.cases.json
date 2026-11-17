@@ -1,0 +1,153 @@
+[
+  {
+    "name": "collected and saved",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "twice": [],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-14T02:50:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z"
+    }
+  },
+  {
+    "name": "only previewed",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "twice": [],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-01T00:00:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z"
+    }
+  },
+  {
+    "name": "an item added twice",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "twice": [
+        "jira PRJ-12: notes/projects/Docs.md, notes/journals/2026_10_14.md"
+      ],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-14T02:50:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z"
+    }
+  },
+  {
+    "name": "sources.json not saved",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [
+        " M sources.json"
+      ],
+      "twice": [],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-14T02:50:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z"
+    }
+  },
+  {
+    "name": "a task the engine settled for a settling source",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "twice": [],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-14T02:50:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z",
+      "done": [
+        {
+          "file": "notes/projects/Docs.md",
+          "text": "Update the guide [PRJ-12](https://tracker.example.com/browse/PRJ-12)",
+          "settled": true
+        }
+      ]
+    },
+    "args": [
+      "--since",
+      "abc123"
+    ]
+  },
+  {
+    "name": "a task closed because its item finished at the source, without the owner",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "twice": [],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-14T02:50:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z",
+      "done": [
+        {
+          "file": "notes/projects/Docs.md",
+          "text": "Update the guide [PRJ-12](https://tracker.example.com/browse/PRJ-12)",
+          "settled": false
+        }
+      ]
+    },
+    "args": [
+      "--since",
+      "abc123"
+    ]
+  },
+  {
+    "name": "a task the owner said is finished",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "twice": [],
+      "named": [
+        {
+          "name": "jira",
+          "fetchedAt": "2026-10-14T02:50:00Z"
+        }
+      ],
+      "now": "2026-10-14T03:00:00Z",
+      "done": [
+        {
+          "file": "notes/projects/Docs.md",
+          "text": "Update the guide [PRJ-12](https://tracker.example.com/browse/PRJ-12)",
+          "settled": false
+        }
+      ]
+    },
+    "args": [
+      "--since",
+      "abc123",
+      "--allow-done",
+      "Update the guide"
+    ]
+  }
+]

@@ -1,0 +1,185 @@
+[
+  {
+    "name": "everything brought up to date",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "same",
+          "markedAt": "2026-10-14T02:00:00Z",
+          "named": false
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-14T02:30:00Z",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "a repository still changed",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "changed",
+          "markedAt": "2026-10-14T02:00:00Z",
+          "named": false
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-14T02:30:00Z",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "a named page not marked today",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "same",
+          "markedAt": "2026-10-14T02:00:00Z",
+          "named": false
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-01T00:00:00Z",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "the update not saved",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [
+        " M sources.json"
+      ],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "same",
+          "markedAt": "2026-10-14T02:00:00Z",
+          "named": false
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-14T02:30:00Z",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "a repository someone is editing right now waits for a later run",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "changed",
+          "markedAt": "2026-10-14T02:00:00Z",
+          "named": false,
+          "busy": true,
+          "commits": 0
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-14T02:30:00Z",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "a repository being edited with commits never brought in",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "changed",
+          "markedAt": "2026-10-10T02:00:00Z",
+          "named": false,
+          "busy": true,
+          "commits": 3
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-14T02:30:00Z",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "a repository marked today but committed to since still waits for those commits",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "now": "2026-10-14T03:00:00Z",
+      "sources": [
+        {
+          "name": "site",
+          "kind": "repo",
+          "status": "changed",
+          "markedAt": "2026-10-14T02:00:00Z",
+          "named": false,
+          "busy": true,
+          "commits": 2
+        },
+        {
+          "name": "news",
+          "kind": "page",
+          "status": "browser",
+          "markedAt": "2026-10-14T02:30:00Z",
+          "named": true
+        }
+      ]
+    }
+  }
+]

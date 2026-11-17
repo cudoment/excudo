@@ -1,0 +1,27 @@
+# Home
+
+## Thinking and plans
+
+```cudoc-embed
+sources: [/]
+render:
+  type: tree
+  open: 0
+  columns: [link, { value: { extractor: openTasks } }, summary]
+  order: [..., Me, Done]
+```
+
+```outline
+- {{query (and "Decision:") {:title "Decisions" :collapsed? true}}}
+- {{query (and "Idea:") {:title "Ideas" :collapsed? true}}}
+```
+
+## Work and automation
+
+```outline
+- {{query (task DOING) {:title "In progress"}}}
+- {{query (and (task TODO DOING) [[agent]]) {:title "Handed to agents"}}}
+- {{query (and (task WAITING) "Review:") {:title "Waiting for review"}}}
+- {{query (and (task WAITING) (not "Review:")) {:title "Waiting" :collapsed? true}}}
+- {{query (and [[check]]) {:title "To check" :collapsed? true}}}
+```

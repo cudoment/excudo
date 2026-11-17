@@ -1,0 +1,316 @@
+/* The memo's look on its website, loaded after cudoc's stylesheet: only cudoc's tokens are used. */
+.excudo-task, .excudo-priority, .excudo-date, .excudo-tag, .excudo-count {
+  display: inline-block;
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0 0.45em;
+  border-radius: var(--radius, 4px);
+  vertical-align: 0.1em;
+  white-space: nowrap;
+}
+.excudo-task { background: var(--accent-soft); color: var(--accent); letter-spacing: 0.02em; }
+.excudo-doing, .excudo-now { background: var(--accent); color: var(--canvas); }
+.excudo-waiting, .excudo-later { background: var(--warn-wash, var(--accent-soft)); color: var(--warn, var(--accent)); }
+.excudo-done, .excudo-canceled { background: var(--wash); color: var(--muted); }
+.excudo-priority { background: var(--wash); color: var(--ink); }
+.excudo-date { background: var(--wash); color: var(--muted); font-weight: 500; }
+.excudo-date::before { content: "⏰ "; }
+.excudo-scheduled::before { content: "📅 "; }
+.excudo-tag { color: var(--muted); font-weight: 500; padding: 0; }
+.excudo-missing { color: var(--muted); border-bottom: 1px dotted var(--line); }
+.excudo-property { color: var(--muted); }
+main li:has(> input[type="checkbox"]:checked), main li:has(> p > input[type="checkbox"]:checked) { color: var(--muted); }
+main input[type="checkbox"] { margin-right: 0.35em; }
+main .excudo-location { color: var(--muted); font-size: 0.9em; margin-top: 0; }
+main .excudo-location a { color: var(--muted); }
+
+/* Query results: a folding section, its count beside the title. */
+details.excudo-query { border: 1px solid var(--line); border-radius: var(--radius, 6px); padding: 0.25rem 0.75rem; margin: 0.5rem 0; }
+details.excudo-query > summary { cursor: pointer; font-weight: 600; padding: 0.25rem 0; border-radius: var(--radius, 4px); }
+details.excudo-query > summary:hover { background: var(--wash); }
+details.excudo-query > summary .excudo-count { background: var(--wash); color: var(--muted); margin-left: 0.25em; }
+details.excudo-query > ul { margin-top: 0.25rem; }
+details.excudo-query .excudo-empty { color: var(--muted); margin: 0.25rem 0 0.5rem; }
+li > details.excudo-query { margin-top: 0; }
+
+/* The list's own buttons, at the top of the sidebar; on a wide screen they stay in view as it scrolls. */
+.excudo-nav-tools { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0 0 0.5rem; padding: 0.25rem 0; position: sticky; top: 0; z-index: 1; background: var(--canvas); }
+.excudo-nav-fold, .excudo-nav-close { min-height: 2rem; padding: 0.125rem 0.625rem; border: 1px solid var(--line); border-radius: var(--radius, 6px); background: var(--paper, var(--canvas)); color: var(--muted); font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.excudo-nav-fold:hover, .excudo-nav-fold:focus-visible, .excudo-nav-close:hover, .excudo-nav-close:focus-visible { border-color: var(--accent); color: var(--accent); }
+/* Unfold all and fold all are icons: square buttons whose chevrons follow the text colour. */
+.excudo-nav-icon { display: inline-flex; align-items: center; justify-content: center; width: 2rem; padding: 0; }
+.excudo-nav-icon svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The runtime's tools: search and folding. */
+.excudo-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0 0 1rem; }
+.excudo-search { flex: 1 1 14rem; min-height: 2.5rem; padding: 0.35rem 0.75rem; border: 1px solid var(--line); border-radius: var(--radius, 6px); background: var(--paper, var(--canvas)); color: var(--ink); font: inherit; }
+.excudo-results { border: 1px solid var(--line); border-radius: var(--radius, 6px); padding: 0.5rem 0.75rem; margin: 0 0 1rem; }
+.excudo-results[hidden] { display: none; }
+.excudo-hits { list-style: none; padding: 0; margin: 0; }
+.excudo-hits li { padding: 0.35rem 0; border-top: 1px solid var(--line-soft, var(--line)); }
+.excudo-hits li:first-child { border-top: 0; }
+.excudo-hit { font-weight: 600; }
+.excudo-hit-open { margin-left: 0.5em; color: var(--accent); font-size: 0.85em; }
+.excudo-hit-summary { display: block; color: var(--muted); font-size: 0.9em; }
+.excudo-hits-count { color: var(--muted); font-size: 0.85em; margin: 0 0 0.25rem; }
+.excudo-last { margin: 0 0 1rem; }
+
+/*
+ * On a phone the sidebar stands above the page. cudoc-export before 1.1.0 keeps it a scroll container
+ * there (overflow-y: auto from its desktop rule), and a swipe that starts on it never scrolls the
+ * page; a long memo tree then hides the page below it. A name of one long word wraps rather than
+ * widening the page once the sidebar no longer scrolls sideways.
+ */
+/*
+ * On a narrow screen the list leaves the page and a floating button opens it as a panel over the page.
+ * cudoc-export 1.1 draws both itself; before 1.1 the runtime draws them with these rules, and a page
+ * read without scripts shows the list in place again (a noscript style the engine adds then).
+ */
+.excudo-nav-fab, .excudo-nav-close { display: none; }
+@media (max-width: 768px) {
+  nav.sidebar { display: none; overflow-wrap: anywhere; }
+  html.excudo-nav-open nav.sidebar {
+    display: block; position: fixed; top: 0; bottom: 0; left: 0; z-index: 60;
+    width: min(86vw, 22rem); max-height: none; margin: 0; padding: 0.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
+    overflow-y: auto; overscroll-behavior: contain; background: var(--paper, var(--canvas));
+    border-right: 1px solid var(--line); box-shadow: 0 0 2.5rem rgb(0 0 0 / 0.3);
+  }
+  html.excudo-nav-open, html.excudo-nav-open body { overflow: hidden; }
+  .excudo-nav-tools { background: var(--paper, var(--canvas)); }
+  .excudo-nav-close { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; }
+  /* A round button with the bars alone at the bottom left, as cudoc-export 1.1 draws its own; its aria-label names it. */
+  .excudo-nav-fab {
+    display: inline-flex; align-items: center; justify-content: center; position: fixed; z-index: 50;
+    left: calc(1rem + env(safe-area-inset-left)); bottom: calc(1rem + env(safe-area-inset-bottom));
+    width: 3rem; height: 3rem; padding: 0; border: 0; border-radius: 50%; background: var(--accent); color: var(--paper, #fff);
+    box-shadow: 0 0.375rem 1.25rem rgb(0 0 0 / 0.25); cursor: pointer;
+  }
+  .excudo-nav-fab svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  html.excudo-nav-open .excudo-nav-fab { display: none; }
+  .excudo-backdrop { position: fixed; inset: 0; z-index: 55; background: rgb(0 0 0 / 0.4); }
+  .excudo-backdrop[hidden] { display: none; }
+  .excudo-tools .excudo-search { flex-basis: 100%; }
+  main { padding-bottom: 5rem; }
+}
+/* Beside a wide page the sidebar and the contents scroll by themselves; at their end, or when there
+ * is nothing to scroll, the wheel goes on to the page instead of stopping (cudoc-export 1.0 contains it). */
+@media (min-width: 769px) {
+  nav.sidebar, nav.toc { overscroll-behavior: auto; }
+}
+
+/* Trees fold on every page; a line's cells read as one line on a phone. */
+.cudoc-tree summary, .cudoc-tree .cudoc-tree-leaf > p { line-height: 1.5; }
+/* A fold shows a chevron that turns down when it opens, as the sidebar's groups do. The browser's own
+   marker is small, and it is gone wherever a summary is laid out as a row (on a phone, below). */
+details.excudo-query > summary, .cudoc-tree summary { list-style: none; }
+details.excudo-query > summary::-webkit-details-marker, .cudoc-tree summary::-webkit-details-marker { display: none; }
+details.excudo-query > summary::before, .cudoc-tree summary::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  width: 0.45em;
+  height: 0.45em;
+  margin: 0 0.5em 0 0.15em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  vertical-align: 0.2em;
+  transform: rotate(-45deg);
+  transition: transform var(--ease, 0.15s ease);
+}
+details.excudo-query[open] > summary::before, .cudoc-tree details[open] > summary::before { transform: rotate(45deg); vertical-align: 0.3em; }
+.cudoc-tree summary::before { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { details.excudo-query > summary::before, .cudoc-tree summary::before { transition: none; } }
+@media (pointer: coarse) {
+  .excudo-nav-fold, .excudo-nav-close { min-height: 2.75rem; }
+  .excudo-nav-icon { width: 2.75rem; }
+  details.excudo-query > summary { min-height: 2.5rem; display: flex; align-items: center; }
+  main input[type="checkbox"] { width: 1.25rem; height: 1.25rem; }
+}
+
+/* A task's state, chosen on the page: the state is a button, the choices follow it on the line, and a
+ * change the memo does not have yet is marked until it does. */
+span.excudo-task[role="button"] { cursor: pointer; }
+span.excudo-task[role="button"]:focus-visible, .excudo-state-choice:focus-visible, .excudo-outbox:focus-visible, .excudo-sync:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.excudo-pending { outline: 1px dashed currentColor; outline-offset: 1px; }
+.excudo-pending::after { content: " ·"; }
+/* Taken into the memo since the page was built; the next build shows it as written. */
+.excudo-applied::after { content: " ✓"; }
+.excudo-states { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; margin: 0 0.35rem; vertical-align: 0.05em; }
+.excudo-state-choice {
+  font: inherit;
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0 0.5em;
+  border: 1px solid var(--line);
+  border-radius: var(--radius, 4px);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+.excudo-state-choice[aria-checked="true"] { background: var(--accent); border-color: var(--accent); color: var(--canvas); }
+.excudo-outbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+  max-width: calc(100vw - 6rem);
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
+}
+.excudo-outbox[hidden], .excudo-sync[hidden] { display: none; }
+.excudo-sync {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--canvas);
+  cursor: pointer;
+}
+.excudo-outbox.excudo-failed { color: var(--warn, var(--accent)); cursor: pointer; }
+@media (pointer: coarse) {
+  .excudo-state-choice { min-height: 2.25rem; min-width: 2.75rem; }
+  .excudo-sync { min-height: 2.25rem; }
+}
+
+/* Home's dashboard: folds in a column, each title line carrying its numbers, quiet until opened. Bars
+ * and columns are drawn from the theme's tokens, so they follow light and dark. */
+.excudo-dash { display: grid; gap: 0.5rem; margin: 0.75rem 0 1.5rem; }
+/* cudoc draws an authored details as a washed box with room around it; a dashboard fold is a plain card. */
+.excudo-dash-section { max-inline-size: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius, 6px); background: var(--paper); }
+.excudo-dash-section > summary, .excudo-dash-section[open] > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  font-weight: inherit;
+  cursor: pointer;
+  list-style: none;
+}
+.excudo-dash-section > summary::-webkit-details-marker { display: none; }
+.excudo-dash-section > summary::before {
+  content: "";
+  flex: none;
+  width: 0.45em;
+  height: 0.45em;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform var(--ease, 0.15s ease);
+}
+.excudo-dash-section[open] > summary::before { transform: rotate(45deg); }
+.excudo-dash-title { font-weight: 600; }
+.excudo-dash-line { margin-left: auto; color: var(--muted); font-size: 0.85rem; text-align: right; }
+.excudo-dash-alert > summary .excudo-dash-line, .excudo-dash-warn { color: var(--warn, var(--accent)); }
+.excudo-dash-body { padding: 0.25rem 0.75rem 0.75rem; }
+.excudo-dash-body > p { margin: 0.5rem 0 0; }
+/* A group's parts, one under another inside its fold, each under its title line with its numbers. */
+.excudo-dash-part + .excudo-dash-part { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.excudo-dash-part-head { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.4rem; }
+.excudo-dash-part-title { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.excudo-dash-part-body > p { margin: 0.5rem 0 0; }
+.excudo-dash-part.excudo-dash-alert .excudo-dash-line { color: var(--warn, var(--accent)); }
+.excudo-dash-note, .excudo-dash-none, .excudo-dash-at { color: var(--muted); font-size: 0.8rem; }
+.excudo-dash-at { margin: 0; text-align: right; }
+.excudo-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0.5rem; }
+.excudo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius, 6px);
+  background: var(--canvas);
+  color: var(--ink);
+  text-decoration: none;
+}
+.excudo-link:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.excudo-link-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--accent-soft, var(--wash));
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.excudo-link-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+.excudo-bars { display: grid; gap: 0.3rem; margin-top: 0.25rem; }
+.excudo-bar { display: grid; grid-template-columns: minmax(5rem, 11rem) 1fr 2.5rem; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.excudo-bar-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.excudo-bar-track, .excudo-column-track { position: relative; display: block; overflow: hidden; border-radius: 3px; background: var(--wash); }
+.excudo-bar-track { height: 0.5rem; }
+.excudo-bar-fill { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.excudo-bar-value, .excudo-column-value { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; text-align: right; }
+.excudo-columns { display: flex; align-items: flex-end; gap: 0.35rem; margin-top: 0.25rem; }
+.excudo-column { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; gap: 0.2rem; min-width: 0; }
+.excudo-column-track { width: 100%; height: 4rem; }
+.excudo-columns-days .excudo-column-track { height: 2.5rem; }
+.excudo-column-fill { position: absolute; right: 0; bottom: 0; left: 0; border-radius: 3px; background: var(--accent); }
+.excudo-column-value { text-align: center; }
+.excudo-column-label { color: var(--muted); font-size: 0.7rem; }
+.excudo-runs { margin: 0.25rem 0 0; padding: 0; list-style: none; font-size: 0.85rem; }
+.excudo-run { display: grid; grid-template-columns: 3.5rem 1fr auto; gap: 0.5rem; padding: 0.2rem 0; border-bottom: 1px solid var(--line-soft, var(--line)); }
+.excudo-run:last-child { border-bottom: 0; }
+.excudo-run-status { color: var(--muted); }
+.excudo-run-failed .excudo-run-status { color: var(--warn, var(--accent)); font-weight: 600; }
+.excudo-run-at { color: var(--muted); font-variant-numeric: tabular-nums; }
+/* The board: the node's body to edit in place, saved by its button. Tabs show as the outliner's indents. */
+.excudo-board-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius, 6px);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  tab-size: 3;
+  resize: vertical;
+}
+.excudo-board-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.excudo-board-status { flex: 1 1 10rem; min-width: 0; color: var(--muted); font-size: 0.8rem; }
+.excudo-board-open { font-size: 0.85rem; }
+.excudo-board-save, .excudo-board-revert {
+  min-height: 2.25rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius, 6px);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.excudo-board-save { border-color: var(--accent); background: var(--accent); color: var(--canvas); }
+.excudo-board-save:disabled { opacity: 0.45; cursor: default; }
+.excudo-board-revert[hidden] { display: none; }
+.excudo-board-input:focus-visible, .excudo-board-save:focus-visible, .excudo-board-revert:focus-visible, .excudo-link:focus-visible, .excudo-dash-section > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (max-width: 768px) {
+  .excudo-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .excudo-bar { grid-template-columns: minmax(4rem, 8rem) 1fr 2rem; }
+}
+@media (prefers-reduced-motion: reduce) { .excudo-dash-section > summary::before { transition: none; } }

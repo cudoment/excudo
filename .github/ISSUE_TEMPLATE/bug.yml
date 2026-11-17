@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a command or behavior that fails.
+title: "Bug: "
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include commands and a small dummy example. Leave out personal notes and credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Sanitized diagnostics
+      description: Run excudo feedback, review its output, and paste the draft here. Remove anything you do not want public.
+      render: markdown

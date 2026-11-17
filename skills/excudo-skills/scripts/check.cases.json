@@ -1,0 +1,954 @@
+[
+  {
+    "name": "skills in use fit and are installed",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "problems": [],
+          "install": "workspace",
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 3,
+            "elsewhere": 1
+          },
+          "mistakes": 1,
+          "lost": []
+        },
+        {
+          "name": "old-draft",
+          "status": "draft",
+          "fit": false,
+          "installed": "off",
+          "problems": [],
+          "install": "workspace",
+          "asked": false
+        },
+        {
+          "name": "link-guard",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "asked": true,
+          "problems": [],
+          "requested": true,
+          "typed": {
+            "here": 0,
+            "elsewhere": 5
+          }
+        },
+        {
+          "name": "site-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "workspace",
+          "asked": true,
+          "requested": true,
+          "typed": {
+            "here": 0,
+            "elsewhere": 2
+          },
+          "problems": []
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "a skill in use fell below the minimum",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": false,
+          "installed": "current",
+          "problems": [
+            "cases: no failing case"
+          ],
+          "install": "workspace",
+          "asked": false
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "an installed copy edited by hand",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "edited",
+          "problems": [],
+          "install": "workspace",
+          "asked": false
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "a skill installed for every folder with no reason or ask",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "asked": false,
+          "problems": []
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "every skill goes everywhere in this workspace",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "asked": false,
+          "problems": []
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "global"
+    }
+  },
+  {
+    "name": "with every skill for every folder, one asked for only in this workspace and given no reason",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "global",
+      "skills": [
+        {
+          "name": "site-sources",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "problems": [],
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 4,
+            "elsewhere": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "a skill for every folder asked for only here, with a reason other folders need it",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "global",
+      "skills": [
+        {
+          "name": "site-sources",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "problems": [],
+          "asked": true,
+          "requested": false,
+          "typed": {
+            "here": 4,
+            "elsewhere": 0
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "a workspace skill asked for mostly in other folders",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "workspace",
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 1,
+            "elsewhere": 4
+          },
+          "problems": []
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "a case recorded for a mistake was removed",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "problems": [],
+          "install": "workspace",
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 3,
+            "elsewhere": 1
+          },
+          "mistakes": 1,
+          "lost": []
+        },
+        {
+          "name": "old-draft",
+          "status": "draft",
+          "fit": false,
+          "installed": "off",
+          "problems": [],
+          "install": "workspace",
+          "asked": false,
+          "mistakes": 1,
+          "lost": [
+            "notes without a date"
+          ]
+        },
+        {
+          "name": "link-guard",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "asked": true,
+          "problems": [],
+          "requested": true,
+          "typed": {
+            "here": 0,
+            "elsewhere": 5
+          }
+        },
+        {
+          "name": "site-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "workspace",
+          "asked": true,
+          "requested": true,
+          "typed": {
+            "here": 0,
+            "elsewhere": 2
+          },
+          "problems": []
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "a retired skill lost a case recorded for a mistake",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "problems": [],
+          "install": "workspace",
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 3,
+            "elsewhere": 1
+          },
+          "mistakes": 1,
+          "lost": []
+        },
+        {
+          "name": "old-draft",
+          "status": "retired",
+          "fit": false,
+          "installed": "off",
+          "problems": [],
+          "install": "workspace",
+          "asked": false,
+          "mistakes": 1,
+          "lost": [
+            "notes without a date"
+          ]
+        },
+        {
+          "name": "link-guard",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "global",
+          "asked": true,
+          "problems": [],
+          "requested": true,
+          "typed": {
+            "here": 0,
+            "elsewhere": 5
+          }
+        },
+        {
+          "name": "site-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "install": "workspace",
+          "asked": true,
+          "requested": true,
+          "typed": {
+            "here": 0,
+            "elsewhere": 2
+          },
+          "problems": []
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "a folder never adopted",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "problems": [],
+          "install": "workspace",
+          "asked": false
+        },
+        {
+          "name": "old-draft",
+          "status": "draft",
+          "fit": false,
+          "installed": "off",
+          "problems": [],
+          "install": "workspace",
+          "asked": false
+        }
+      ],
+      "unregistered": [
+        "half-done"
+      ],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "the record not saved",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": true,
+          "installed": "current",
+          "problems": [],
+          "install": "workspace",
+          "asked": false
+        },
+        {
+          "name": "old-draft",
+          "status": "draft",
+          "fit": false,
+          "installed": "off",
+          "problems": [],
+          "install": "workspace",
+          "asked": false
+        }
+      ],
+      "unregistered": [],
+      "unsaved": [
+        " M skills.json"
+      ],
+      "minScore": 80,
+      "install": "workspace"
+    }
+  },
+  {
+    "name": "a skill whose check ran out of time on a known case is held, not unfit",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": false,
+          "installed": "current",
+          "problems": [
+            "cases: The check ran past 30 seconds on these cases and judged nothing: slow case. The verdict is held until a run finishes them."
+          ],
+          "install": "workspace",
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 3,
+            "elsewhere": 0
+          },
+          "mistakes": 0,
+          "lost": [],
+          "held": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "a skill whose check judged a known case wrongly is unfit even when another case ran out of time",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "skills": [
+        {
+          "name": "release-notes",
+          "status": "active",
+          "fit": false,
+          "installed": "current",
+          "problems": [
+            "cases: Given these cases' facts with --facts, the check judged them wrongly: bad case (fail → pass), slow case (pass → timeout)."
+          ],
+          "install": "workspace",
+          "asked": false,
+          "requested": false,
+          "typed": {
+            "here": 3,
+            "elsewhere": 0
+          },
+          "mistakes": 0,
+          "lost": [],
+          "held": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "trimmed instructions keep rules and all moved lines",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      }
+    }
+  },
+  {
+    "name": "trimming removed a template rule",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 1,
+        "pinned": 0,
+        "lost": 0
+      }
+    }
+  },
+  {
+    "name": "trimming changed a pinned section",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 1,
+        "lost": 0
+      }
+    }
+  },
+  {
+    "name": "trimming lost a dated decision line",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 1
+      }
+    }
+  },
+  {
+    "name": "automatic trim reaches the conservative target",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": true,
+        "started": true,
+        "aboveTarget": false,
+        "reason": ""
+      }
+    }
+  },
+  {
+    "name": "automatic trim stops above target without a reason",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": true,
+        "started": true,
+        "aboveTarget": true,
+        "reason": ""
+      }
+    }
+  },
+  {
+    "name": "automatic trim reports a protected or unsupported remaining block",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": true,
+        "started": true,
+        "aboveTarget": true,
+        "reason": "Only pinned rules remain."
+      }
+    }
+  },
+  {
+    "name": "manual mode reports candidates without trimming",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": false,
+        "started": true,
+        "aboveTarget": true,
+        "reason": ""
+      }
+    }
+  },
+  {
+    "name": "automatic trim does not start below the limit",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": true,
+        "started": false,
+        "aboveTarget": true,
+        "reason": ""
+      }
+    }
+  },
+  {
+    "name": "trimming changes a pinned list item",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 1,
+        "lost": 0
+      }
+    }
+  },
+  {
+    "name": "prospective trim permits only instructions skills and their record and links",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [
+        " M AGENTS.md",
+        " M skills/example/SKILL.md",
+        "?? skills/example/references/run.md",
+        " M skills.json",
+        " M .agents/skills/example",
+        " M .claude/skills/example"
+      ],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      },
+      "trimPaths": [
+        "AGENTS.md",
+        "skills",
+        "skills.json",
+        ".agents/skills",
+        ".claude/skills"
+      ],
+      "uncommitted": true
+    }
+  },
+  {
+    "name": "saved trim still refuses uncommitted instructions",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [
+        " M AGENTS.md"
+      ],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      },
+      "trimPaths": [
+        "AGENTS.md",
+        "skills",
+        "skills.json",
+        ".agents/skills",
+        ".claude/skills"
+      ],
+      "uncommitted": false
+    }
+  },
+  {
+    "name": "prospective trim still refuses other unsaved work",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [
+        " M notes/Topic.md"
+      ],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      },
+      "trimPaths": [
+        "AGENTS.md",
+        "skills",
+        "skills.json",
+        ".agents/skills",
+        ".claude/skills"
+      ],
+      "uncommitted": true
+    }
+  },
+  {
+    "name": "protected bytes make the target unreachable but the limit is met",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": true,
+        "started": true,
+        "aboveTarget": true,
+        "targetBlocked": true,
+        "over": false,
+        "reason": "Pinned text exceeds the target; the file is within the limit."
+      }
+    }
+  },
+  {
+    "name": "an unreachable target does not excuse an over-limit file without a blocker report",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "scheduled": {
+        "auto": true,
+        "started": true,
+        "aboveTarget": true,
+        "targetBlocked": true,
+        "over": true,
+        "reason": ""
+      }
+    }
+  },
+  {
+    "name": "trimming swaps nested procedure steps",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 6
+      }
+    }
+  },
+  {
+    "name": "trimming drops one of two identical items",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 2
+      }
+    }
+  },
+  {
+    "name": "two verbatim moves preserve contiguous hunks and their counts",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      }
+    }
+  },
+  {
+    "name": "adjacent blocks moved verbatim to separate references preserve every piece",
+    "expect": "pass",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      },
+      "uncommitted": false
+    }
+  },
+  {
+    "name": "a committed preserved trim still reports an unrelated unsaved memo page",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [
+        " M notes/Topic.md"
+      ],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      },
+      "uncommitted": false
+    }
+  },
+  {
+    "name": "a committed preserved trim still refuses uncommitted skill files",
+    "expect": "fail",
+    "facts": {
+      "broken": null,
+      "statuses": [],
+      "skills": [],
+      "unregistered": [],
+      "unsaved": [
+        " M skills/example/references/run.md"
+      ],
+      "minScore": 80,
+      "install": "workspace",
+      "trim": {
+        "template": 0,
+        "pinned": 0,
+        "lost": 0
+      },
+      "uncommitted": false
+    }
+  }
+]

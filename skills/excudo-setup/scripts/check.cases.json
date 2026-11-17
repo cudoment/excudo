@@ -1,0 +1,689 @@
+[
+  {
+    "name": "a complete setup",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      }
+    }
+  },
+  {
+    "name": "a workspace without git still works",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": false,
+      "ignored": {
+        "cache": null,
+        "modules": null
+      },
+      "rulesMissing": [],
+      "errors": []
+    }
+  },
+  {
+    "name": "AGENTS.md behind the template",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [
+        "Only summaries of requests."
+      ],
+      "errors": []
+    }
+  },
+  {
+    "name": "AGENTS.md with a template rule in other words",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "rulesDiffer": [
+        "Only the owner decides what is done."
+      ]
+    }
+  },
+  {
+    "name": "a skill only Codex sees",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": false
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": []
+    }
+  },
+  {
+    "name": "the cache not ignored",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": false,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": []
+    }
+  },
+  {
+    "name": "no local engine",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": false,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": []
+    }
+  },
+  {
+    "name": "an owner's Home that repeats a node's task",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [
+          "Home.md:4"
+        ],
+        "broken": []
+      }
+    }
+  },
+  {
+    "name": "an owner's Home that embeds a view not built yet",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": [
+          "Thinking"
+        ]
+      }
+    }
+  },
+  {
+    "name": "a website set but never written",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "site": {
+        "configured": true,
+        "out": ".excudo/site",
+        "written": false
+      }
+    }
+  },
+  {
+    "name": "a website set and written",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "site": {
+        "configured": true,
+        "out": ".excudo/site",
+        "written": true
+      }
+    }
+  },
+  {
+    "name": "a website set to be published but never published",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "site": {
+        "configured": true,
+        "out": ".excudo/site",
+        "written": true,
+        "publish": {
+          "project": "my-memo",
+          "url": null
+        }
+      }
+    }
+  },
+  {
+    "name": "a website written and published",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "site": {
+        "configured": true,
+        "out": ".excudo/site",
+        "written": true,
+        "publish": {
+          "project": "my-memo",
+          "url": "https://my-memo.vercel.app"
+        }
+      }
+    }
+  },
+  {
+    "name": "a kept skill setting contains an invalid name",
+    "expect": "fail",
+    "facts": {
+      "settings": [
+        "skills.keep contains an invalid skill name"
+      ],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      }
+    }
+  },
+  {
+    "name": "an agent role uses an unsupported reasoning effort",
+    "expect": "fail",
+    "facts": {
+      "settings": [
+        "Unsupported reasoning effort: worker"
+      ],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      }
+    }
+  },
+  {
+    "name": "instruction target must stay below the limit",
+    "expect": "fail",
+    "facts": {
+      "settings": [
+        "Instructions target must be below limit."
+      ],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      }
+    }
+  },
+  {
+    "name": "an incomplete setup has no local engine",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": false,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      }
+    }
+  },
+  {
+    "name": "an allowlisted issue draft",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "feedback": {
+        "diagnostic": {
+          "engine": "0.7.0",
+          "node": "v24.0.0",
+          "platform": "linux x64",
+          "start": [
+            {
+              "id": "workspace",
+              "state": "done"
+            }
+          ],
+          "checks": [
+            "skill-check"
+          ],
+          "runs": [
+            {
+              "step": "build",
+              "status": "failed",
+              "codes": [
+                "ENOENT"
+              ]
+            }
+          ]
+        },
+        "details": false,
+        "url": "https://github.com/cudoment/excudo/issues/new?title=Report"
+      }
+    },
+    "args": [
+      "--feedback",
+      "draft.json"
+    ]
+  },
+  {
+    "name": "a draft with unrequested free-form run details",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "feedback": {
+        "diagnostic": {
+          "engine": "0.7.0",
+          "node": "v24.0.0",
+          "platform": "linux x64",
+          "start": [
+            {
+              "id": "workspace",
+              "state": "done"
+            }
+          ],
+          "checks": [
+            "skill-check"
+          ],
+          "runs": [
+            {
+              "step": "build",
+              "status": "failed",
+              "codes": [
+                "ENOENT"
+              ],
+              "detail": "Private owner notes"
+            }
+          ]
+        },
+        "details": false,
+        "url": "https://github.com/cudoment/excudo/issues/new?title=Report"
+      }
+    },
+    "args": [
+      "--feedback",
+      "draft.json"
+    ]
+  },
+  {
+    "name": "a draft with unrequested skill details",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "feedback": {
+        "diagnostic": {
+          "engine": "0.7.0",
+          "node": "v24.0.0",
+          "platform": "linux x64",
+          "start": [
+            {
+              "id": "workspace",
+              "state": "done"
+            }
+          ],
+          "checks": [
+            "skill-check"
+          ],
+          "runs": [
+            {
+              "step": "build",
+              "status": "failed",
+              "codes": [
+                "ENOENT"
+              ]
+            }
+          ]
+        },
+        "details": true,
+        "url": "https://github.com/cudoment/excudo/issues/new?title=Report"
+      }
+    },
+    "args": [
+      "--feedback",
+      "draft.json"
+    ]
+  }
+]

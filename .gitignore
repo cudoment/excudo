@@ -1,0 +1,16 @@
+node_modules/
+.DS_Store
+
+# Engine cache: the record of generated regions, git history digests and request text.
+.excudo/
+
+# Keep your own notes out of this repository. If you use the tool from this
+# clone, put your workspace in private/ (or anywhere outside the clone).
+private/
+
+# Outliner backups and sync-tool leftovers.
+logseq/bak/
+logseq/.recycle/
+.stversions/
+.stfolder/
+*.sync-conflict-*

@@ -1,0 +1,6 @@
+# Keep Markdown drafts from excudo feedback usable alongside the issue forms.
+blank_issues_enabled: true
+contact_links:
+  - name: Start with the guide
+    url: https://github.com/cudoment/excudo#readme
+    about: Installation, optional tools, commands and examples.

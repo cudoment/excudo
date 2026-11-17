@@ -1,0 +1,23 @@
+name: Usability feedback
+description: Tell us where setup or daily use became confusing.
+title: "Usability: "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What were you trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: stopped
+    attributes:
+      label: Where did you get stuck?
+      description: Explain the unclear step and what you expected next.
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Sanitized diagnostics
+      description: Run excudo feedback, review its output, and paste the draft here. You can also include excudo start --report.
+      render: markdown

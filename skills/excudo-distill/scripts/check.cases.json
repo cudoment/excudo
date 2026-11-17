@@ -1,0 +1,284 @@
+[
+  {
+    "name": "a finished interview",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "dangling": [],
+      "home": []
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "a question put off",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [
+        "notes/Me.md: - Which plan? #check"
+      ],
+      "lost": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "dangling": [],
+      "home": []
+    }
+  },
+  {
+    "name": "an open task gone",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [
+        "notes/Me.md: Call the dentist"
+      ],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "dangling": [],
+      "home": []
+    }
+  },
+  {
+    "name": "a link left on a renamed node",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [
+        "notes/Plans.md:4: [[Search demo]]"
+      ],
+      "home": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      }
+    }
+  },
+  {
+    "name": "only the owner's Home links a renamed node",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [
+        "[[Search demo]]"
+      ],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      }
+    }
+  },
+  {
+    "name": "an open task removed with the owner's answer",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [
+        "notes/Me.md: Call the dentist"
+      ],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "dangling": [],
+      "home": []
+    },
+    "args": [
+      "--allow-removed"
+    ]
+  },
+  {
+    "name": "requests read but not marked",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-01T00:00:00Z"
+      },
+      "dangling": [],
+      "home": []
+    },
+    "args": [
+      "--requests"
+    ]
+  },
+  {
+    "name": "a batch not saved",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [
+        " M review.json"
+      ],
+      "tags": [],
+      "lost": [],
+      "requests": {
+        "shown": "2026-10-14T01:00:00Z",
+        "mark": "2026-10-14T01:00:00Z"
+      },
+      "dangling": [],
+      "home": []
+    }
+  },
+  {
+    "name": "a pasted memo sorted, asked about and applied as answered",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [],
+      "raw": {
+        "lines": 6,
+        "unasked": [],
+        "unanswered": []
+      }
+    },
+    "args": [
+      "--raw",
+      "raw.json"
+    ]
+  },
+  {
+    "name": "a new pasted line nobody asked about",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [],
+      "raw": {
+        "lines": 6,
+        "unasked": [
+          "7: add an RSS feed"
+        ],
+        "unanswered": []
+      }
+    },
+    "args": [
+      "--raw",
+      "raw.json"
+    ]
+  },
+  {
+    "name": "a pasted line added to the memo without an answer",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [],
+      "raw": {
+        "lines": 6,
+        "unasked": [],
+        "unanswered": [
+          "notes/projects/Website.md:6: Learn to bake sourdough"
+        ]
+      }
+    },
+    "args": [
+      "--raw",
+      "raw.json"
+    ]
+  },
+  {
+    "name": "a task marked done without the owner's word",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [],
+      "done": [
+        {
+          "file": "notes/Me.md",
+          "text": "Call the dentist"
+        }
+      ]
+    }
+  },
+  {
+    "name": "a task marked done the owner said is finished",
+    "expect": "pass",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [],
+      "done": [
+        {
+          "file": "notes/Me.md",
+          "text": "Call the dentist #later"
+        }
+      ]
+    },
+    "args": [
+      "--allow-done",
+      "call the dentist"
+    ]
+  },
+  {
+    "name": "one task the owner finished, another closed on an agent's guess",
+    "expect": "fail",
+    "facts": {
+      "errors": [],
+      "unsaved": [],
+      "tags": [],
+      "lost": [],
+      "dangling": [],
+      "home": [],
+      "done": [
+        {
+          "file": "notes/Me.md",
+          "text": "Call the dentist"
+        },
+        {
+          "file": "notes/projects/Website.md",
+          "text": "Fix the broken links"
+        }
+      ]
+    },
+    "args": [
+      "--allow-done",
+      "Call the dentist"
+    ]
+  }
+]

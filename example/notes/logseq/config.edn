@@ -1,0 +1,9 @@
+{:meta/version 1
+ :preferred-format :markdown
+ :preferred-workflow :todo
+ :file/name-format :triple-lowbar
+ :journal/page-title-format "yyyy-MM-dd EEE"
+ :journal/file-name-format "yyyy_MM_dd"
+ :default-home {:page "Home"}
+ :favorites ["Home"]
+ :hidden []}
