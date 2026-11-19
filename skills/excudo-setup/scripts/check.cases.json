@@ -685,5 +685,1142 @@
       "--feedback",
       "draft.json"
     ]
+  },
+  {
+    "name": "owner actions relayed before the notes and again after apply",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.7.5",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "## 0.8.0\n\n- Open Home\n",
+        "applied": true,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n0.7.5: Skills: Run skills --force\nOther notes:\n- Open Home",
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n0.7.5: Skills: Run skills --force\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "an update without owner actions needs no relay",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [],
+        "changelog": "- Open Home",
+        "relays": []
+      }
+    }
+  },
+  {
+    "name": "owner actions not relayed again after apply",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.7.5",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": true,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n0.7.5: Skills: Run skills --force\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions relayed without one version",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.7.5",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting"
+        ]
+      }
+    }
+  },
+  {
+    "name": "other notes shown before the owner actions",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.7.5",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "relays": [
+          "Notes:\n- Open Home\nOwner action:\n0.8.0: Settings: Rename the inbox setting\n0.7.5: Skills: Run skills --force"
+        ]
+      }
+    }
+  },
+  {
+    "name": "the update JSON from before the apply is passed and the relay after it is missing",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "expectApplied": true,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions relayed twice with the JSON of the apply",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": true,
+        "expectApplied": true,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home",
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions given in a translation only",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "relays": [
+          "직접 해야 할 일: 0.8.0 설정 이름 변경 (받은편지함 설정)"
+        ]
+      }
+    }
+  },
+  {
+    "name": "an apply that failed after installing the engine needs the relay after it",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "engineChanged": true,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "an apply that failed after installing the engine and relayed twice",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "engineChanged": true,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home",
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "an apply that failed before installing anything needs one relay",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "applied": false,
+        "engineChanged": false,
+        "relays": [
+          "Owner action:\n0.8.0: Settings: Rename the inbox setting\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions relayed in order with several other notes after them",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home\n- Fix startup",
+        "relays": [
+          "Owner action:\n0.9.0: Settings: Rename the inbox setting\n0.8.0: Skills: Run skills --force\nOther notes:\n- Open Home\n- Fix startup"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions could not be confirmed and the warning was relayed",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [],
+        "missingNote": "The notes above skip 0.8.0; read them in the full changelog: https://example.com/changelog",
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner actions could not be confirmed. The notes above skip 0.8.0; read them in the full changelog: https://example.com/changelog"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions could not be confirmed and the warning was not relayed",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [],
+        "missingNote": "The notes above skip 0.8.0; read them in the full changelog: https://example.com/changelog",
+        "changelog": "- Open Home",
+        "relays": [
+          "No owner action. Other notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "the update JSON from before the apply is passed and it has no owner actions",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [],
+        "changelog": "- Open Home",
+        "applied": false,
+        "expectApplied": true,
+        "relays": [
+          "Nothing to do",
+          "Nothing to do"
+        ]
+      }
+    }
+  },
+  {
+    "name": "a later note shown before the owner actions",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home\n- Fix startup",
+        "relays": [
+          "Fix startup\n0.9.0: Settings: Rename the inbox setting\n0.8.0: Skills: Run skills --force\nOpen Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions relayed with the older version first",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.8.0: Skills: Run skills --force\n0.9.0: Settings: Rename the inbox setting\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "prerelease owner actions relayed with the numeric identifier compared as a number",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0-beta.10",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.8.0-beta.2",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.8.0-beta.10: Settings: Rename the inbox setting\n0.8.0-beta.2: Skills: Run skills --force\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "prerelease owner actions relayed with the lower numeric identifier first",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.8.0-beta.10",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          },
+          {
+            "version": "0.8.0-beta.2",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.8.0-beta.2: Skills: Run skills --force\n0.8.0-beta.10: Settings: Rename the inbox setting\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "an older version's item placed between the items of a newer version",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Settings: Rename the inbox setting",
+              "Home: Review the layout"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.9.0: Settings: Rename the inbox setting\n0.8.0: Skills: Run skills --force\n0.9.0: Home: Review the layout\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "owner actions relayed under the wrong versions",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Settings: Rename the inbox setting"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.9.0: Settings: Rename the inbox setting\n0.8.0: Skills: Run skills --force\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "the same item in two versions relayed under each",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Skills: Run skills --force",
+              "Home: Review the layout"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.9.0: Skills: Run skills --force\n0.9.0: Home: Review the layout\n0.8.0: Skills: Run skills --force\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "the same item in two versions listed once only",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [
+          {
+            "version": "0.9.0",
+            "items": [
+              "Skills: Run skills --force",
+              "Home: Review the layout"
+            ]
+          },
+          {
+            "version": "0.8.0",
+            "items": [
+              "Skills: Run skills --force"
+            ]
+          }
+        ],
+        "changelog": "- Open Home",
+        "relays": [
+          "Owner action:\n0.9.0: Skills: Run skills --force\n0.9.0: Home: Review the layout\n0.8.0: Settings\nOther notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "both registry lookups failed and the unconfirmed warning was not relayed",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [],
+        "missingNote": "The owner actions of the releases up to 0.9.0 could not be confirmed; read them in the full changelog: https://example.com/changelog",
+        "changelog": "- Open Home",
+        "relays": [
+          "No owner action. Other notes:\n- Open Home"
+        ]
+      }
+    }
+  },
+  {
+    "name": "both registry lookups failed and the unconfirmed warning was relayed",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "update": {
+        "ownerActions": [],
+        "missingNote": "The owner actions of the releases up to 0.9.0 could not be confirmed; read them in the full changelog: https://example.com/changelog",
+        "changelog": "- Open Home",
+        "relays": [
+          "The owner actions of the releases up to 0.9.0 could not be confirmed; read them in the full changelog: https://example.com/changelog\nOther notes:\n- Open Home"
+        ]
+      }
+    }
   }
 ]

@@ -10,6 +10,8 @@
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
+import { prepare } from "./build.mjs"
+import { conversationsOf } from "./requests.mjs"
 import { ownedHome } from "./tree.mjs"
 import { publishState } from "./publish.mjs"
 import { pullScheduleState } from "./schedule.mjs"
@@ -25,6 +27,14 @@ const atLeast = (version, needed) => {
 }
 const inGit = (dir) => spawnSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: dir, encoding: "utf8" }).status === 0
 const safely = (test) => { try { return Boolean(test()) } catch { return false } }
+/**
+ * Learning from requests runs when some tool's logs are read (not `false`, not both turned off) and the
+ * `interests` setting names a node that exists, the lookup the reflect skill's check makes too.
+ */
+const learning = (ws) => {
+  const where = conversationsOf(ws)
+  return Boolean(where && (where.claude || where.codex) && ws.interests && prepare(ws).model.find(ws.interests))
+}
 /**
  * The inbox is ready once Vercel holds its token and something brings the changes in: the engine's
  * schedule, unless the settings leave that to a schedule of the owner's own (`schedule: false`).
@@ -48,6 +58,8 @@ export const START_STEPS = [
   { id: "git", required: true, run: "git init", done: (ws) => ws.hasConfig && inGit(ws.root) },
   { id: "skills", required: true, run: "npx --no-install excudo skills", done: (ws) => ws.hasConfig && existsSync(join(ws.root, ".agents", "skills", "excudo-setup", "SKILL.md")) },
   { id: "agents", required: false, run: "npx --no-install excudo agents", done: (ws) => ws.hasConfig && Boolean(ws.agents?.worker && Array.isArray(ws.agents?.reviewers)) },
+  { id: "learn", required: false, run: null, setting: 'conversations: true, interests: "Interests"', probe: (ws) => ws.hasConfig && safely(() => learning(ws)),
+    set: (ws, known = safely(() => learning(ws))) => known, done: (ws, known = ws.hasConfig && safely(() => learning(ws))) => known },
   { id: "tine", required: false, run: null, link: "https://tine.page", done: () => null },
   { id: "phone", required: false, run: null, link: "https://syncthing.net", done: () => null },
   { id: "home", required: false, run: "npx --no-install excudo home --own", done: (ws) => ws.hasConfig && safely(() => ownedHome(ws)) },
@@ -77,7 +89,7 @@ export const COMMAND_STEPS = {
 /** Every setting, by the step that sets it, or false when the defaults serve a new owner. */
 export const SETTING_STEPS = {
   graph: "workspace", locale: "workspace", private: false, summaryMax: false, topSummaryMax: false, widthMax: false, taskMax: false, doingMax: false, doneKeep: false,
-  staleDays: false, keepDays: false, bodyMax: false, cache: false, sources: "sources", knowledge: false, interests: false, conversations: false,
+  staleDays: false, keepDays: false, bodyMax: false, cache: false, sources: "sources", knowledge: false, interests: "learn", conversations: "learn",
   moved: false, skills: false, "skills.keep": false, instructions: false, "instructions.limit": false, "instructions.target": false, "instructions.auto": false, "instructions.keep": false, exports: false, mirrors: false, queue: false, agents: "agents", site: "site",
   "site.out": false, "site.title": false, "site.mode": false, "site.open": false, "site.journals": false, "site.css": false, "site.id": false,
   "site.onSave": false, "site.inbox": "inbox", "site.publish": "site", "site.inbox.github": false, "site.inbox.schedule": false,
@@ -88,7 +100,7 @@ export const SETTING_STEPS = {
 /** Every skill the engine installs, by the step that uses it, or false for daily use. */
 export const SKILL_STEPS = {
   "excudo-setup": "skills", "excudo-capture": false, "excudo-distill": false, "excudo-export": false, "excudo-follow": false,
-  "excudo-queue": false, "excudo-recall": false, "excudo-reflect": false, "excudo-skills": false, "excudo-sources": "sources",
+  "excudo-queue": false, "excudo-recall": false, "excudo-reflect": "learn", "excudo-skills": "learn", "excudo-sources": "sources",
 }
 
 /** Whether every classification names a known step. */
@@ -102,10 +114,15 @@ export const unknownSteps = () => [COMMAND_STEPS, SETTING_STEPS, SKILL_STEPS].fl
 export function startStatus(ws) {
   const words = ws.labels.start
   const steps = START_STEPS.map((step) => {
+    // A step that is costly to judge says once (`probe`) what its done and set both use.
+    let known
+    try { known = step.probe?.(ws) } catch { known = false }
     let done
-    try { done = step.done(ws) } catch { done = false }
-    return { id: step.id, required: step.required, needs: step.needs ?? null, done: done === null ? null : Boolean(done), run: step.run, link: step.link ?? null,
-      setting: step.setting && !(step.set?.(ws)) ? step.setting : null, title: words.steps[step.id].title, how: words.steps[step.id].how, ask: words.steps[step.id].ask ?? null }
+    try { done = step.done(ws, known) } catch { done = false }
+    let set
+    try { set = step.set?.(ws, known) } catch { set = false }
+    return { id: step.id, required: step.required, needs: step.needs ?? null, done: done === null ? null : Boolean(done), run: step.run, link: words.steps[step.id].link ?? step.link ?? null,
+      setting: step.setting && !set ? step.setting : null, title: words.steps[step.id].title, how: words.steps[step.id].how, ask: words.steps[step.id].ask ?? null }
   })
   const ready = (step) => !step.needs || steps.find((other) => other.id === step.needs)?.done
   const next = steps.find((step) => step.required && step.done === false) ?? steps.find((step) => !step.required && step.done === false && ready(step)) ?? null
@@ -133,7 +150,7 @@ export function startMarkdown(labels) {
     if (step.setting) parts.push(`\`${step.setting}\``)
     if (step.run) parts.push(`\`${step.run}\``)
     if (text.ask) parts.push(`${words.askLabel} “${text.ask}”`)
-    if (step.link) parts.push(step.link)
+    if (text.link ?? step.link) parts.push(text.link ?? step.link)
     return `${n}. ${parts.join("; ")}`
   }
   const required = START_STEPS.filter((step) => step.required)

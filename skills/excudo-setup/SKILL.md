@@ -1,6 +1,6 @@
 ---
 name: excudo-setup
-description: Set up an Excudo memo from nothing, install its engine, open it in Tine, sync it to a phone, put it on a website and let task states be changed there, hand Home over to the owner or arrange its layout, connect an outside source, keep knowledge of a repository or page, let agents learn from the owner's requests, update the engine, prepare a problem report, or change settings. Use for "update the engine", "report a problem", "엔진 업데이트해 줘", "문제 제보해 줘", "choose my worker and reviewers", "작업자와 검토자 정해 줘", "set up my memo", "where do I start", "let me see my memo on my phone", "set up the website", "let me change task states on the website", "watch this repository", "let me write my Home", "arrange my Home", "메모를 새로 만들어 줘", "어디서부터 시작해", "휴대폰에서도 보고 싶어", "사이트 설정해 줘", "사이트에서 할 일 상태를 바꾸게 해 줘", "홈 구성 바꿔 줘", "외부 할 일 가져와 줘", or "메모 설정 바꿔 줘".
+description: Set up an Excudo memo from nothing, install its engine, open it in Tine, sync it to a phone, put it on a website and let task states be changed there, hand Home over to the owner or arrange its layout, connect an outside source, keep knowledge of a repository or page, let agents learn from the owner's requests, update the engine, prepare a problem report, or change settings. Use for "update the engine", "report a problem", "엔진 업데이트해 줘", "문제 제보해 줘", "choose my worker and reviewers", "작업자와 검토자 정해 줘", "set up my memo", "where do I start", "let me see my memo on my phone", "set up the website", "let me change task states on the website", "watch this repository", "let me write my Home", "arrange my Home", "let agents learn from my requests", "메모를 새로 만들어 줘", "어디서부터 시작해", "휴대폰에서도 보고 싶어", "사이트 설정해 줘", "사이트에서 할 일 상태를 바꾸게 해 줘", "홈 구성 바꿔 줘", "내 요청에서 배우게 해 줘", "외부 할 일 가져와 줘", or "메모 설정 바꿔 줘".
 ---
 
 # Set up an Excudo memo
@@ -24,8 +24,25 @@ Use the local engine for maintenance requests before the setup steps below.
 
 For "update the engine", run `npx --no-install excudo update --json` to inspect the version and release links.
 Use `--channel next` when the owner chooses beta releases.
-If the request authorizes installation, run `npx --no-install excudo update --apply`.
+If the request authorizes installation, run `npx --no-install excudo update --apply --json`.
 It preserves edited skills and reports backups; review those copies with the owner.
+When the JSON has `ownerActions` (what the owner must do after updating: a setting, a migration, a manual step),
+tell the owner each version's items first, newest version first and before every other note, and tell them
+again after `--apply`, since the owner may act only then. Quote each item verbatim, as the JSON gives it;
+add a translation after it when the owner reads another language, never in its place.
+Do not do these steps unasked.
+Keep the JSON of `update --json` and of `update --apply --json` and the messages you showed in temporary
+files outside the memo, then check them. After an apply pass the apply JSON (`applied: true`) and `--applied`:
+
+```sh
+node .agents/skills/excudo-setup/scripts/check.mjs --update <update.json> --relay <message.txt>
+node .agents/skills/excudo-setup/scripts/check.mjs --update <apply.json> --applied --relay <message.txt> --relay <after-apply.txt>
+```
+
+Pass one `--relay` when nothing was applied, two when it was.
+If the apply fails, its JSON has `engineChanged: true` when the engine was installed before the failing step.
+Keep that JSON's `ownerActions`, tell the owner they are pending, and relay them again after the rerun finishes;
+the check wants the second relay for such a JSON too.
 
 Then run `npx --no-install excudo start --report` and this skill's `scripts/check.mjs`.
 Report missing template rules instead of overwriting the owner's instructions.
@@ -67,7 +84,7 @@ Follow the first incomplete step from the report.
 2. For a new workspace, ask its location and language (`en` or `ko`) if unknown. Install once:
 
    ```sh
-   npx -y excudo@^0.7.0 init <folder> --locale <en|ko>
+   npx -y excudo@^0.8.0 init <folder> --locale <en|ko>
    ```
 
    If `EXCUDO_PACKAGE` is set, use its local folder or tarball instead:
@@ -205,9 +222,12 @@ Follow the first incomplete step from the report.
    a top node for topics) in `knowledge`. Then `npx --no-install excudo changes` shows what
    the recall skill should read.
 
-10. To let agents learn from the owner's requests to coding agents on this machine, set
+10. To let agents learn from the owner's requests to coding agents on this machine (the
+   "Learn from your requests" step of `excudo start`; ask first, as it reads local agent logs), set
    `conversations: true` (or `{ claude, codex, exclude }` for other log folders and folders to
-   leave out) and `interests` to the node where the reflect skill keeps lasting decisions. The
+   leave out) and `interests` to the node where the reflect skill keeps lasting decisions. That node
+   must exist: tell the owner to create it (the start step stays open until it does), or create it
+   with their agreement. The
    request text stays in the workspace cache, outside the graph and git. Nodes can name their work
    folder with a path line, `` `/path/to/folder` ``, kept current by `workspaces`; a
    folder several nodes work in gets a line on each, with only that work's windows. When

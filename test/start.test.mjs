@@ -8,7 +8,7 @@ import { PUBLISH_KEYS } from "../src/publish.mjs"
 import { installPullSchedule } from "../src/schedule.mjs"
 import { siteIdOf } from "../src/site-runtime.mjs"
 import { INBOX_KEYS, SITE_KEYS, siteOf } from "../src/site.mjs"
-import { COMMAND_STEPS, SETTING_STEPS, SKILL_STEPS, START_STEPS, unknownSteps } from "../src/start.mjs"
+import { COMMAND_STEPS, SETTING_STEPS, SKILL_STEPS, START_STEPS, startStatus, unknownSteps } from "../src/start.mjs"
 import { READMES, withStartSection } from "../scripts/start-docs.mjs"
 import { tempDir, workspace } from "./helpers.mjs"
 
@@ -86,6 +86,34 @@ test("excudo start says where a new owner stands, with or without a workspace", 
   assert.deepEqual(made.steps.filter((step) => step.done).map((step) => step.id), ["node", "workspace", "skills"])
   assert.equal(made.next, "install", "npm install comes next")
   assert.ok(readdirSync(resolve(empty, "memo")).includes("excudo.config.mjs"))
+})
+
+test("the learning step is done only when a tool's logs are read and the interests node exists", async () => {
+  const learn = START_STEPS.find((step) => step.id === "learn")
+  assert.equal(learn.required, false)
+  const done = async (settings) => learn.done(await workspace({}, settings))
+  const make = async (settings, nodes = {}) => workspace(nodes, settings)
+  assert.equal(await done({ conversations: false, interests: "Interests" }), false, "reading requests is off")
+  assert.equal(await done({ conversations: true }), false, "no interests setting")
+  assert.equal(await done({ conversations: true, interests: "Interests" }), false, "the node does not exist")
+  const withNode = async (settings) => learn.done(await make(settings, { "Interests.md": "- Lasting decisions\n" }))
+  assert.equal(await withNode({ conversations: true, interests: "Interests" }), true)
+  assert.equal(await withNode({ conversations: { claude: "~/logs" }, interests: "Interests" }), true)
+  assert.equal(await withNode({ conversations: { codex: "~/logs" }, interests: "Interests" }), true)
+  assert.equal(await withNode({ conversations: { claude: false, codex: false }, interests: "Interests" }), false, "both tools turned off")
+  // A setting of the wrong shape neither throws nor stops the report.
+  for (const conversations of [{ claude: true, codex: false }, { exclude: "~/work" }]) {
+    const ws = await make({ conversations, interests: "Interests" }, { "Interests.md": "- Lasting decisions\n" })
+    assert.equal(learn.done(ws), false)
+    assert.doesNotThrow(() => learn.set(ws))
+    assert.equal(startStatus(ws).steps.find((step) => step.id === "learn").done, false)
+    assert.ok(startStatus(ws).steps.find((step) => step.id === "learn").setting, "the settings are shown again")
+  }
+  assert.match(learn.setting, /conversations: true.*interests/, "the step shows both settings")
+  assert.equal(SETTING_STEPS.conversations, "learn")
+  assert.equal(SETTING_STEPS.interests, "learn")
+  assert.deepEqual(["excudo-reflect", "excudo-skills"].map((name) => SKILL_STEPS[name]), ["learn", "learn"])
+  for (const locale of ["en", "ko"]) assert.match(LOCALES[locale].start.steps.learn.how, /README/)
 })
 
 test("the inbox step is done once Vercel holds the token and something brings the changes in", async () => {

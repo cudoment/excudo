@@ -5,7 +5,7 @@ import { syncBuiltinESMExports } from "node:module"
 import { writeFileSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { test } from "node:test"
-import { changelogBetween, compareVersions, runNpm, updatePackage } from "../src/update.mjs"
+import { changelogBetween, compareVersions, runNpm, splitOwnerActions, updatePackage } from "../src/update.mjs"
 import { LOCALES } from "../src/labels.mjs"
 import { tempDir, withEnv } from "./helpers.mjs"
 
@@ -64,6 +64,44 @@ test("update checks latest or next without installing, and uses installed releas
   assert.equal((combined.changelog.match(/## 0\.7\.0/g) ?? []).length, 1)
 })
 
+test("update separates each version's Owner action group from the other notes", async () => {
+  const text = "## 0.8.0\n\n### Owner action\n\n- Settings: Rename the inbox setting\n- Skills: Run skills --force\n\n### Site\n\n- Open Home\n\n## 0.7.1\n\n### CLI\n\n- Fix\n"
+  const split = splitOwnerActions(text)
+  assert.deepEqual(split.actions, [{ version: "0.8.0", items: ["Settings: Rename the inbox setting", "Skills: Run skills --force"] }])
+  assert.doesNotMatch(split.rest, /Owner action|Rename the inbox/)
+  assert.match(split.rest, /### Site[\s\S]*## 0\.7\.1/)
+  const result = await updatePackage(ws(), { npm: stub([view("0.8.0")]).npm, installed: "0.7.0", changelog: text })
+  assert.deepEqual(result.ownerActions.map((item) => item.version), ["0.8.0"])
+  assert.doesNotMatch(result.changelog, /Owner action/)
+  assert.match(result.changelog, /Open Home/)
+})
+
+test("update lists owner actions from the metadata for versions past the printed notes", async () => {
+  const metadata = { excudoReleaseNotes: { version: "0.9.0", markdown: "## 0.9.0\n\n### CLI\n\n- Newest\n",
+    ownerActions: [{ version: "0.9.0", items: ["Cli: Run it"] }, { version: "0.7.5", items: ["Settings: Rename a setting"] }, { version: "0.6.0", items: ["Too old"] }] } }
+  const fake = stub([view("0.9.0"), view(metadata), view(["0.7.0", "0.7.5", "0.9.0"])])
+  const result = await updatePackage(ws(), { npm: fake.npm, installed: "0.7.0", changelog: "" })
+  assert.deepEqual(result.ownerActions, [{ version: "0.9.0", items: ["Cli: Run it"] }, { version: "0.7.5", items: ["Settings: Rename a setting"] }])
+  assert.doesNotMatch(result.missingNote, /owner actions/, "the metadata listed them, so the old text stays")
+  assert.match(result.missingNote, /skip 0\.7\.5, 0\.9\.0|skip 0\.7\.5/)
+  assert.match(LOCALES.ko.update["update-missing-notes-unlisted"], /직접 해야 할 일/)
+  // Metadata without the list (an older release) cannot say, so the warning is added.
+  const old = stub([view("0.9.0"), view({ excudoReleaseNotes: { version: "0.9.0", markdown: "## 0.9.0\n\n### CLI\n\n- Newest\n" } }), view(["0.7.0", "0.7.5", "0.9.0"])])
+  const unlisted = await updatePackage(ws(), { npm: old.npm, installed: "0.7.0", changelog: "" })
+  assert.match(unlisted.missingNote, /skipped versions may hold owner actions/)
+})
+
+test("update warns that owner actions are unconfirmed when the metadata and the versions lookup both fail", async () => {
+  const fake = stub([view("0.9.0"), { status: 1, stderr: "npm error code ETIMEDOUT" }, { status: 1, stderr: "npm error code ETIMEDOUT" }])
+  const result = await updatePackage(ws(), { npm: fake.npm, installed: "0.7.0", changelog: "" })
+  assert.deepEqual(result.ownerActions, [])
+  assert.match(result.missingNote, /owner actions of the releases up to 0\.9\.0 could not be confirmed/)
+  assert.match(result.missingNote, /blob\/v0\.9\.0\/CHANGELOG\.md/)
+  assert.match(LOCALES.ko.update["update-owner-actions-unconfirmed"], /직접 해야 할 일을 확인하지 못했습니다/)
+  const listed = stub([view("0.9.0"), view({ excudoReleaseNotes: { version: "0.9.0", markdown: "## 0.9.0\n\n- New\n", ownerActions: [] } }), { status: 1 }])
+  assert.equal((await updatePackage(ws(), { npm: listed.npm, installed: "0.7.0", changelog: "" })).missingNote, undefined, "a listed (empty) set is confirmed")
+})
+
 test("offline, malformed metadata and registry failures exit successfully", async () => {
   for (const response of [{ status: 1 }, { error: new Error("offline") }, { status: 0, stdout: "not json" }, view("bad")]) {
     const result = await updatePackage(ws(), { npm: stub([response]).npm })
@@ -93,7 +131,7 @@ test("apply runs exactly the displayed commands in the workspace and stops on fa
 test("update CLI emits JSON with a real offline npm view stub", () => {
   const root = tempDir()
   const npm = join(root, "npm-cli.cjs")
-  writeFileSync(npm, 'if (process.argv[2] !== "view") process.exit(99); console.log(JSON.stringify(process.argv[4] === "version" ? "0.8.0" : { changelog: "## 0.8.0\\n\\nNew release notes\\n" }))\n')
+  writeFileSync(npm, 'if (process.argv[2] !== "view") process.exit(99); console.log(JSON.stringify(process.argv[4] === "version" ? "0.99.0" : { changelog: "## 0.99.0\\n\\nNew release notes\\n" }))\n')
   const result = spawnSync(process.execPath, [resolve("bin/excudo.mjs"), "update", "--root", root, "--json"],
     { encoding: "utf8", env: { ...process.env, npm_execpath: npm } })
   assert.equal(result.status, 0, result.stderr)
@@ -103,8 +141,8 @@ test("update CLI emits JSON with a real offline npm view stub", () => {
   const text = spawnSync(process.execPath, [resolve("bin/excudo.mjs"), "update", "--root", root],
     { encoding: "utf8", env: { ...process.env, npm_execpath: npm } })
   assert.equal(text.status, 0, text.stderr)
-  assert.match(text.stdout, /Excudo 0\.8\.0 is available/)
-  assert.match(text.stdout, /New release notes[\s\S]*npm install excudo@\^0\.8\.0\nnpx --no-install excudo skills --force/)
+  assert.match(text.stdout, /Excudo 0\.99\.0 is available/)
+  assert.match(text.stdout, /New release notes[\s\S]*npm install excudo@\^0\.99\.0\nnpx --no-install excudo skills --force/)
 })
 
 test("a failed apply names the failed command and the ones left", async () => {
@@ -141,10 +179,16 @@ test("an update across skipped versions says which releases the notes lack", asy
   assert.deepEqual(result.missingVersions, ["0.7.1"])
   assert.match(result.missingNote, /0\.7\.1/)
   assert.match(result.missingNote, /blob\/v0\.8\.0\/CHANGELOG\.md/)
-  const full = stub([view("0.8.0"), view({}), view(["0.7.0", "0.7.1", "0.8.0"])])
-  const complete = await updatePackage(ws(), { npm: full.npm, installed: "0.7.0", changelog: "## 0.8.0\n\nA\n\n## 0.7.1\n\nB\n" })
+  const notes = "## 0.8.0\n\nA\n\n## 0.7.1\n\nB\n"
+  const full = stub([view("0.8.0"), view({ excudoReleaseNotes: { version: "0.8.0", markdown: notes, ownerActions: [] } }), view(["0.7.0", "0.7.1", "0.8.0"])])
+  const complete = await updatePackage(ws(), { npm: full.npm, installed: "0.7.0", changelog: notes })
   assert.deepEqual(complete.missingVersions, [])
   assert.equal(complete.missingNote, undefined)
+  // Metadata that lists no owner actions (an older release) leaves them unconfirmed even when no version is skipped.
+  const bare = stub([view("0.8.0"), view({}), view(["0.7.0", "0.7.1", "0.8.0"])])
+  const unconfirmed = await updatePackage(ws(), { npm: bare.npm, installed: "0.7.0", changelog: notes })
+  assert.deepEqual(unconfirmed.missingVersions, [])
+  assert.match(unconfirmed.missingNote, /could not be confirmed/)
 })
 
 test("without --channel, only an installed prerelease follows next", async () => {

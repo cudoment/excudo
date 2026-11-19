@@ -13,10 +13,11 @@ npm ci
 npm test
 ```
 
-Keep generated words in both English and Korean and update both READMEs together.
+Keep generated words in both English and Korean and update both READMEs together; keep the short `README.ja.md` and `README.zh-CN.md` install guides in step with their install rules.
 Register new commands and settings in `src/start.mjs`.
 Keep skill procedures, their check scripts and their known cases in step.
 Use `Area: Summary` for English commit subjects, such as `CLI: Explain offline updates`.
+Write `Area!: Summary` when the owner must act after updating (a setting, a migration, a manual step), such as `Settings!: Rename the inbox setting`.
 Set your Git identity for this repository with `git config user.name` and `git config user.email`.
 
 ## Verify a change
@@ -54,10 +55,13 @@ node scripts/changelog.mjs --since <previous-release-ref> --write <version>
 ```
 
 The generator groups short capitalized areas and replaces an existing section of the same version.
-It also stores the newest section in package metadata for registry-based update checks.
-Keep the package version, lockfile and setup skill's install range aligned.
+Commits marked `Area!: Summary` appear first in each section under "Owner action", without the bang, and `excudo update` shows that group before the other notes.
+It also stores the newest sections, and the owner actions of every version, in package metadata for registry-based update checks.
+Keep the package version, lockfile and the install ranges (`excudo@^<version>`) in the setup skill and all four READMEs (`README.md`, `README.ko.md`, `README.ja.md`, `README.zh-CN.md`) aligned.
+For a prerelease version only the setup skill names it; the four READMEs keep the last stable release, which is what `latest` serves.
 
 Releases use semantic versions: publish betas with `npm publish --tag next` and stable versions with `npm publish --tag latest`.
 To promote a published stable version tested on `next`, use `npm dist-tag add excudo@<version> latest`.
 Verify tags with `npm view excudo dist-tags --json`.
+Run `npm run test:install` before publishing; it installs the packed tarball in a temporary folder and needs the network.
 Publication follows the full release checks on `main`; contributing a change does not publish it.

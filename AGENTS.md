@@ -1,5 +1,7 @@
 # Working on Excudo
 
+This file is for changing the engine; to install Excudo for yourself, follow the README section "Install with a coding agent".
+
 Excudo (`excudo`, Latin for "I hammer out") is the engine that keeps an owner's personalized AI
 environment managed and improving: the shared rules, skills and procedures, and the commands behind them.
 A workspace run with it is the owner's personal project, named for its purpose as Excudo plus a word
@@ -67,7 +69,7 @@ personal project.
   them now, `_github.mjs` is what they share).
 - `src/open.mjs` opens a generated site in the system's file handler (`site --open`); a failure leaves its path for the owner.
 - `src/start.mjs` holds a new owner's first steps and classifies every command, setting and skill by
-  them (`excudo start`; `scripts/start-docs.mjs` writes the READMEs' start sections from it).
+  them (`excudo start`; `scripts/start-docs.mjs` writes the English and Korean READMEs' start sections from it).
 - `src/update.mjs` checks npm release channels and updates only on request.
   `src/feedback.mjs` prepares sanitized issue drafts without sending them.
   `scripts/changelog.mjs` groups commit subjects into versioned release notes.
@@ -115,7 +117,7 @@ personal project.
   (Node built-ins and `excudo/skill-kit`); no tool-specific calls. They must work in Claude Code
   and Codex alike.
 - **Keep both languages in step.** A new message or generated word needs an `en` and a `ko` entry;
-  a README change goes into `README.md` and `README.ko.md`.
+  a README change goes into `README.md` and `README.ko.md`; `README.ja.md` and `README.zh-CN.md` are short install guides (no `src/` locales) that follow the install rules, ranges and language line.
 - **Keep the first steps true for a new owner.** `src/start.mjs` holds the steps from nothing to a memo
   in use (`excudo start`, the README's start section, the setup skill). Every command the help shows,
   every setting and every skill is classified there, by the first step it belongs to or `false`. When
@@ -174,17 +176,23 @@ here, under these instructions, checked here and then in that project.
 
 Prepare the notes and validate the untagged version before publishing.
 
-1. Raise the version in `package.json` and `package-lock.json`, and the setup skill's range with it.
+1. Raise the version in `package.json` and `package-lock.json`, and the install ranges (`excudo@^<version>`) in the setup skill and all four READMEs (`README.md`, `README.ko.md`, `README.ja.md`, `README.zh-CN.md`) with it.
+   For a prerelease version only the setup skill names it; the four READMEs keep the last stable release, which is what `latest` serves (`scripts/ranges.mjs` holds the rule, and `release:check` and the tests apply it).
    Run `node scripts/changelog.mjs --since <previous-release-ref> --write <version>` and review the section.
-   This also puts the newest section in `package.json` for `npm view` to return after publishing.
+   This also puts the newest sections, and the owner actions of every version, in `package.json` for `npm view` and `excudo update` to read after publishing.
+   Mark a commit that needs the owner to act after updating (a setting, a migration, a manual step) with a bang after the
+   area: `Area!: Summary`. The generator lists these first in each version section under "Owner action",
+   without the bang, and `excudo update` prints that group before the other notes.
 2. Run `npm run release:check` on a clean `main` before tagging.
    It checks registry dependencies, the version's CHANGELOG section and private words.
    It also checks tests, example output, skills and package contents.
+   It does not install the package: run `npm run test:install` as well (see step 3).
 
    Use `npm run release:check -- --quick` for preliminary checks.
    It skips tests, the example rebuild and skill lint; it never approves publishing.
    The publish hook repeats the full check.
 3. Commit the release changes on `main` and run the full release check while the version is untagged.
+   Run `npm run test:install` too: it packs this repository and installs the tarball for `en` and `ko` in a temporary folder (init, `npm install`, `git init`, the start report, `check`, `--version`). It needs the network, so `npm test` leaves it out; it keeps the folder on failure.
    The maintainer publishes with `npm publish --tag next` for a beta or `npm publish --tag latest` for stable.
    After verifying publication, publish the corresponding `v<version>` tag for release-note links.
 

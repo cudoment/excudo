@@ -7,7 +7,8 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { parseArgs } from "node:util"
 import { localDependencies } from "./dependencies.mjs"
-import { groupSubjects } from "./changelog.mjs"
+import { groupSubjects, ownerActionsOf } from "./changelog.mjs"
+import { READMES, expectedRange, staleRanges } from "./ranges.mjs"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const results = []
@@ -89,17 +90,28 @@ async function main() {
     ? `not from the registry: ${local.map((item) => `${item.name} ${item.spec}`).join(", ")}; install the published versions first`
     : "every dependency comes from the registry")
   const setup = readFileSync(join(root, "skills", "excudo-setup", "SKILL.md"), "utf8")
-  check("setup-range", setup.includes(`excudo@^${version}`), `the setup skill installs excudo@^${version}`)
-
+  // The setup skill follows the version; the READMEs follow it too, or the last stable release while it is a prerelease.
+  const rangeFiles = [["skills/excudo-setup/SKILL.md", setup, "setup"], ...READMES.map((file) => [file, readFileSync(join(root, file), "utf8"), "readme"])]
+  const outdated = staleRanges(rangeFiles, version)
+  const wanted = [...new Set(rangeFiles.filter(([name]) => outdated.includes(name)).map(([, , kind]) => expectedRange(kind, version)))].join(" / ")
+  check("setup-range", !outdated.length, outdated.length ? `${outdated.join(", ")} must install ${wanted} (every range, at least one); raise the ranges with the version`
+    : `the setup skill and all four READMEs install ${version.includes("-") ? `${version} (setup) and a stable release (READMEs)` : `excudo@^${version}`}`)
   const denied = await run(process.execPath, ["scripts/denylist.mjs", "--json"])
   let deny = {}
   try { deny = JSON.parse(denied.stdout) } catch {}
   check("denylist", passed(denied), deny.skipped ? "no private/denylist.txt to compare with"
     : deny.found?.length ? `a listed word in ${deny.found.slice(0, 5).map((item) => item.line ? `${item.file}:${item.line}` : item.file).join(", ")}`
     : deny.words !== undefined ? `no file holds any of ${deny.words} listed word(s)` : failure(denied))
+  // The two full READMEs keep the same outline; the Japanese and Chinese ones are short guides.
   const headings = (file) => readFileSync(join(root, file), "utf8").split("\n").filter((line) => /^#{1,3} /.test(line)).length
   const en = headings("README.md"), ko = headings("README.ko.md")
-  check("readmes", en === ko, `README.md ${en} headings, README.ko.md ${ko} headings`)
+  const unlinked = READMES.filter((file) => {
+    const first = readFileSync(join(root, file), "utf8").split("\n").slice(0, 6).join("\n")
+    return READMES.some((other) => other !== file && !first.includes(`(${other})`))
+  })
+  check("readmes", en === ko && !unlinked.length, en !== ko ? `README.md ${en} headings, README.ko.md ${ko} headings`
+    : unlinked.length ? `${unlinked.join(", ")} must link the other READMEs in a language line near the top`
+    : `README.md and README.ko.md have ${en} headings; all four link each other`)
 
   // Package contents are cheap to inspect, without waiting for the skill checks to run.
   const names = readdirSync(join(root, "skills"), { withFileTypes: true })
@@ -130,7 +142,9 @@ async function main() {
     const entry = subject ? groupSubjects([subject])[0]?.summaries[0] : undefined
     const stale = entry !== undefined && !section.includes(`- ${entry}`)
     const published = manifest.excudoReleaseNotes
-    const packaged = !published || published.version !== version || (entry !== undefined && !String(published.markdown).includes(`- ${entry}`))
+    // Owner actions of every version travel in the metadata, beyond the recent sections the markdown keeps.
+    const actionsStale = JSON.stringify(published?.ownerActions ?? []) !== JSON.stringify(ownerActionsOf(notes))
+    const packaged = !published || published.version !== version || (entry !== undefined && !String(published.markdown).includes(`- ${entry}`)) || actionsStale
     check("changelog", begin >= 0 && !stale && !packaged,
       begin < 0 ? `CHANGELOG.md has no section for ${version}`
         : stale ? `CHANGELOG.md ${version} lacks the newest commit "${subject}"; run scripts/changelog.mjs --since <previous-release-ref> --write ${version}`
@@ -156,6 +170,7 @@ async function main() {
     check("skills", passed(lint) && Array.isArray(skills) && skills.length > 0 && !short.length,
       !passed(lint) ? failure(lint) : short.length ? short.map((skill) => `${skill.name} ${skill.score}/100`).join(", ") : `${skills.length ?? 0} skills at 100/100`)
   }
+  console.log("- install: not run here (it needs the network); run npm run test:install before publishing.")
   const failed = results.filter((item) => !item.ok).length
   if (failed) console.log(`${failed} to fix before publishing ${version}.`)
   if (values.quick) console.log(`Quick checks finished; a full release check is required before publishing ${version}.`)

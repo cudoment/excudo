@@ -67,15 +67,19 @@ export function releaseFixture(options = {}) {
   const commands = join(root, "commands")
   mkdirSync(commands)
   write(root, "commands/package.json", '{"type":"commonjs"}\n')
-  for (const name of ["release-check.mjs", "dependencies.mjs", "changelog.mjs"]) {
+  for (const name of ["release-check.mjs", "dependencies.mjs", "changelog.mjs", "ranges.mjs"]) {
     mkdirSync(join(root, "scripts"), { recursive: true })
     cpSync(join(engine, "scripts", name), join(root, "scripts", name))
   }
-  write(root, "package.json", JSON.stringify({ name: "fixture", version: "1.2.3", type: "module", excudoReleaseNotes: { version: "1.2.3", markdown: "## 1.2.3\n\nRelease changes.\n" } }))
-  write(root, "README.md", "# Fixture\n")
+  write(root, "package.json", JSON.stringify({ name: "fixture", version: options.version ?? "1.2.3", type: "module", excudoReleaseNotes: { version: options.version ?? "1.2.3", markdown: "## 1.2.3\n\nRelease changes.\n" } }))
+  const languages = "English | [한국어](README.ko.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md)"
+  const readme = (range) => `${languages}\n\nnpx -y excudo@^${range} init my-memo\n`
+  write(root, "README.md", readme(options.readmeRange ?? (options.staleReadme ? "1.2.0" : "1.2.3")))
   write(root, "CHANGELOG.md", options.missingChangelog ? "# Changelog\n" : "# Changelog\n\n## 1.2.3\n\nRelease changes.\n")
-  write(root, "README.ko.md", "# Fixture\n")
-  write(root, "skills/excudo-setup/SKILL.md", "excudo@^1.2.3\n")
+  write(root, "README.ko.md", `[English](README.md) | 한국어 | [日本語](README.ja.md) | [简体中文](README.zh-CN.md)\n\nnpx -y excudo@^${options.koRange ?? options.readmeRange ?? "1.2.3"} init my-memo\n`)
+  write(root, "README.ja.md", `[English](README.md) | [한국어](README.ko.md) | 日本語 | [简体中文](README.zh-CN.md)\n\nnpx -y excudo@^${options.jaRange ?? options.readmeRange ?? "1.2.3"} init my-memo\n`)
+  write(root, "README.zh-CN.md", `[English](README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | 简体中文\n\nnpx -y excudo@^${options.zhRange ?? options.readmeRange ?? "1.2.3"} init my-memo\n`)
+  write(root, "skills/excudo-setup/SKILL.md", `excudo@^${options.setupRange ?? options.version ?? "1.2.3"}\n`)
   write(root, "scripts/denylist.mjs", 'console.log(JSON.stringify({ skipped: true }))\n')
   write(root, "bin/excudo.mjs", `import { appendFileSync } from "node:fs"
 const args = process.argv.slice(2)

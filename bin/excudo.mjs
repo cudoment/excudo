@@ -222,6 +222,7 @@ Commands
 Options
   --root <dir>      workspace folder (default: nearest folder with excudo.config.mjs)
   --graph <dir>     graph folder, overriding the workspace setting
+  -v, --version     print the installed version
   -h, --help        show this help`
 
 const { values, positionals } = parseArgs({
@@ -298,12 +299,17 @@ const { values, positionals } = parseArgs({
     canceled: { type: "boolean" },
     json: { type: "boolean" },
     help: { type: "boolean", short: "h" },
+    version: { type: "boolean", short: "v" },
   },
 })
 const [command, ...args] = positionals
 const COMMANDS = new Set(["feedback", "update", "instructions", "agents", "start", "init", "build", "home", "check", "tree", "review", "move", "remove", "rename", "find", "inbox", "archive", "sources", "ingest",
   "changes", "requests", "workspaces", "fix", "mirror", "snapshot", "save", "export", "site", "skills", "idle", "activity", "sessions", "queue", "runs", "backup", "receive"])
 
+if (values.version) {
+  console.log(JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version)
+  process.exit(0)
+}
 if (!command || values.help) {
   console.log(HELP)
   process.exit(command || values.help ? 0 : 1)
@@ -384,6 +390,13 @@ async function main() {
       for (const warning of result.warnings ?? []) if (warning.note !== result.note) console.log(warning.note)
       if (result.stderr) console.error(result.stderr)
       if (result.skillRefreshOutput) console.log(result.skillRefreshOutput)
+      if (result.ownerActions?.length) {
+        console.log(`\n${ws.labels.update["update-owner-action"]}`)
+        for (const { version, items } of result.ownerActions) {
+          console.log(`  ${version}`)
+          for (const item of items) console.log(`  - ${item}`)
+        }
+      }
       if (result.changelog) console.log(`\n${result.changelog}`)
       else if (result.changelogNote) console.log(result.changelogNote)
       if (result.missingNote) console.log(result.missingNote)

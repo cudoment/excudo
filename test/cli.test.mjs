@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { test } from "node:test"
 import { mirror } from "../src/index.mjs"
 import { tempDir } from "./helpers.mjs"
+import { staleRanges } from "../scripts/ranges.mjs"
 import { cliWorkspace, releaseFixture, runCli, seedRequests, write } from "./cli-helpers.mjs"
 
 const json = (result) => JSON.parse(result.stdout)
@@ -120,6 +121,43 @@ test("quick checks accept contribution branches while full releases still requir
   assert.match(full.stdout, /✗ branch: on feature\/contribution/)
   assert.doesNotMatch(full.stdout, /Ready to publish/)
 })
+test("release refuses a README whose excudo@^ range is not this version", { skip: process.platform === "win32" && "POSIX executable fixtures" }, () => {
+  const stale = release(releaseFixture({ staleReadme: true }), ["--quick"])
+  success(stale, 1)
+  assert.match(stale.stdout, /✗ setup-range: README\.md must install excudo@\^1\.2\.3/)
+  assert.doesNotMatch(stale.stdout, /README\.ko\.md must/)
+  for (const [option, file] of [["koRange", "README.ko.md"], ["jaRange", "README.ja.md"], ["zhRange", "README.zh-CN.md"]]) {
+    const one = release(releaseFixture({ [option]: "1.2.0" }), ["--quick"])
+    success(one, 1)
+    assert.match(one.stdout, new RegExp(`✗ setup-range: ${file.replaceAll(".", "\\.")} must install excudo@\\^1\\.2\\.3`))
+  }
+  const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
+  const version = JSON.parse(read("package.json")).version
+  assert.deepEqual(staleRanges([["setup", read("skills/excudo-setup/SKILL.md"), "setup"], ["README.md", read("README.md"), "readme"], ["README.ko.md", read("README.ko.md"), "readme"], ["README.ja.md", read("README.ja.md"), "readme"], ["README.zh-CN.md", read("README.zh-CN.md"), "readme"]], version), [],
+    "the setup skill and all four READMEs keep to the range rule for this version")
+})
+test("a prerelease version moves only the setup skill; the READMEs keep the last stable release", { skip: process.platform === "win32" && "POSIX executable fixtures" }, () => {
+  const names = (options) => release(releaseFixture({ version: "1.3.0-beta.1", ...options }), ["--quick"]).stdout.match(/^[✓✗] setup-range: .*/m)[0]
+  assert.match(names({ readmeRange: "1.2.3" }), /^✓ setup-range/)
+  assert.match(names({ readmeRange: "1.3.0-beta.1" }), /✗ setup-range: README\.md, README\.ko\.md, README\.ja\.md, README\.zh-CN\.md must install an earlier stable/)
+  assert.match(names({ readmeRange: "1.3.0" }), /✗ setup-range: README\.md, README\.ko\.md, README\.ja\.md, README\.zh-CN\.md/)
+  assert.match(names({ readmeRange: "1.2.3", setupRange: "1.2.3" }), /✗ setup-range: skills\/excudo-setup\/SKILL\.md must install excudo@\^1\.3\.0-beta\.1/)
+  assert.deepEqual(staleRanges([["a", "excudo@^0.7.0", "readme"], ["b", "excudo@^0.8.0-beta.1", "setup"]], "0.8.0-beta.1"), [])
+  assert.deepEqual(staleRanges([["a", "excudo@^0.8.0-beta.1", "readme"]], "0.8.0-beta.1"), ["a"])
+})
+test("release refuses package metadata that lacks the owner actions of the changelog", { skip: process.platform === "win32" && "POSIX executable fixtures" }, () => {
+  const fixture = releaseFixture()
+  const notes = "# Changelog\n\n## 1.2.3\n\n### Owner action\n\n- Settings: Rename a setting\n"
+  writeFileSync(join(fixture.root, "CHANGELOG.md"), notes)
+  const manifest = JSON.parse(readFileSync(join(fixture.root, "package.json"), "utf8"))
+  manifest.excudoReleaseNotes.markdown = notes
+  writeFileSync(join(fixture.root, "package.json"), JSON.stringify(manifest))
+  const stale = release(fixture)
+  assert.match(stale.stdout, /✗ changelog: package\.json excudoReleaseNotes is not current/)
+  manifest.excudoReleaseNotes.ownerActions = [{ version: "1.2.3", items: ["Settings: Rename a setting"] }]
+  writeFileSync(join(fixture.root, "package.json"), JSON.stringify(manifest))
+  assert.match(release(fixture).stdout, /✓ changelog:/)
+})
 test("release fails when a child fails even if its output looks successful", { skip: process.platform === "win32" && "POSIX executable fixtures" }, () => {
   for (const options of [{ packCode: 1 }, { testCode: 1 }, { buildCode: 1 }, { lintCode: 1 }]) {
     const result = release(releaseFixture(options))
@@ -170,4 +208,19 @@ test("a full release refuses notes that lack the newest commit", { skip: process
   manifest.excudoReleaseNotes.markdown = notes
   writeFileSync(join(listed.root, "package.json"), JSON.stringify(manifest))
   assert.match(release(listed).stdout, /✓ changelog:/)
+})
+
+test("--version and -v print the installed version inside and outside a workspace", async () => {
+  const version = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version
+  const ws = await cliWorkspace()
+  const bin = new URL("../bin/excudo.mjs", import.meta.url).pathname
+  for (const flag of ["--version", "-v"]) {
+    const inside = spawnSync(process.execPath, [bin, flag], { cwd: ws.root, encoding: "utf8" })
+    assert.equal(inside.status, 0, inside.stderr)
+    assert.equal(inside.stdout.trim(), version)
+    const outside = spawnSync(process.execPath, [bin, flag], { cwd: tempDir(), encoding: "utf8" })
+    assert.equal(outside.status, 0, outside.stderr)
+    assert.equal(outside.stdout.trim(), version)
+  }
+  assert.match(spawnSync(process.execPath, [bin, "--help"], { encoding: "utf8" }).stdout, /-v, --version/)
 })

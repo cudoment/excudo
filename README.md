@@ -1,6 +1,6 @@
 # Excudo
 
-English | [한국어](README.ko.md)
+English | [한국어](README.ko.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md)
 
 **Electricity is not free, so AI should earn its power bill.**
 
@@ -15,9 +15,10 @@ skills and automation, where work, learning and creative results get made.
 Create a memo, install its engine and see the next step.
 
 ```sh
-npx -y excudo@^0.7.0 init my-memo
+npx -y excudo@^0.8.0 init my-memo
 cd my-memo
 npm install
+git init
 npx --no-install excudo start
 ```
 
@@ -34,6 +35,22 @@ The local website needs no hosting account.
 See [updates](#update-the-engine), [feedback](#report-a-problem), the
 [bug form](https://github.com/cudoment/excudo/issues/new?template=bug.yml) and
 [usability form](https://github.com/cudoment/excudo/issues/new?template=usability.yml).
+
+## Install with a coding agent
+
+Paste this into a coding agent (Claude Code, Codex) opened in an empty place:
+
+> Set up Excudo from https://github.com/cudoment/excudo in a new folder, following its README section "Install with a coding agent"
+
+The agent follows these rules and runs only the commands of rule 4 and the report check, never the website block of the five-minute start:
+
+1. Check that Node.js is 22.16 or later (`node --version`); if not, stop and point to https://nodejs.org.
+2. Ask the folder name and the language of the files (`en` or `ko`) once, then use them without asking again. Choose `en` unless the owner reads Korean (`ko`). Whatever the file language is, keep talking to the owner in the owner's own language (Japanese, Chinese or any other).
+3. Never install anything globally: no `npm install -g`, and no change outside the new folder apart from npm's own cache.
+4. Run `npx -y excudo@^0.8.0 init <folder> --locale <language>`, then this one line: `cd <folder> && npm install && git init && npx --no-install excudo start --report --json`. Every command after `init` runs inside `<folder>`; `init` does not run git, so `git init` is part of the sequence.
+5. Read the report (`--report --json`) to verify. The install succeeded when the steps `workspace`, `install`, `git` and `skills` are all `done`. For each of them that is not, show its `id` and `state` and ask the owner what to do; do not guess a cause or run anything else.
+6. When a command fails, stop, show the last lines of its error output and ask the owner; never improvise a fix or another command.
+7. Finish by handing the owner the next remaining step, the one named by `stoppedAt`: relay its `run`, `ask` and `setting` verbatim and do not run it yourself.
 
 ## Get started
 
@@ -52,12 +69,13 @@ The engine generates the list below.
 **When you want them**:
 
 1. **Worker and independent reviewers**: choose tools, models and reasoning effort; `npx --no-install excudo agents`; or ask your agent “choose my worker and reviewers”
-2. **Tine**: open the graph folder (notes/) in Tine to read and write the memo; https://tine.page
-3. **Your phone**: sync the graph folder with Syncthing and open it in Tine on the phone; or ask your agent “let me see my memo on my phone”; https://syncthing.net
-4. **Your own Home**: write the first screen yourself; the tree moves to the Archive; `npx --no-install excudo home --own`; or ask your agent “let me write my Home”
-5. **Outside work**: bring in an issue tracker or team board through your logged-in browser; `npx --no-install excudo sources`; or ask your agent “pull my issues into my memo”
-6. **The memo as a website**: publish it on Vercel where only your login opens it, on a computer or a phone; `npx --no-install excudo site setup`; or ask your agent “set up the website”
-7. **Task states from the website**: bring website task states into the memo; `site: { inbox: true }`; `npx --no-install excudo site setup`; or ask your agent “let me change task states on the website”
+2. **Learn from your requests**: let agents read the requests you type to coding agents here, turn lasting decisions into interests and recurring work into skills with their own checks; the interests setting names a node, so create that node first (README: Learn from your requests, Skills carry their own code); `conversations: true, interests: "Interests"`; or ask your agent “let agents learn from my requests”; https://github.com/cudoment/excudo#learn-from-your-requests
+3. **Tine**: open the graph folder (notes/) in Tine to read and write the memo; https://tine.page
+4. **Your phone**: sync the graph folder with Syncthing and open it in Tine on the phone; or ask your agent “let me see my memo on my phone”; https://syncthing.net
+5. **Your own Home**: write the first screen yourself; the tree moves to the Archive; `npx --no-install excudo home --own`; or ask your agent “let me write my Home”
+6. **Outside work**: bring in an issue tracker or team board through your logged-in browser; `npx --no-install excudo sources`; or ask your agent “pull my issues into my memo”
+7. **The memo as a website**: publish it on Vercel where only your login opens it, on a computer or a phone; `npx --no-install excudo site setup`; or ask your agent “set up the website”
+8. **Task states from the website**: bring website task states into the memo; `site: { inbox: true }`; `npx --no-install excudo site setup`; or ask your agent “let me change task states on the website”
 
 Run `npx -y excudo start` (`npx --no-install excudo start` in a workspace) to see progress. Use `excudo start --report` for every step and where to continue.
 <!-- /excudo:start -->
@@ -110,6 +128,7 @@ verified in Tine, not yet in Logseq.
 - Block ids, references and embeds checked and repaired (`fix`).
 - Scheduled runs of reflection, skill upkeep and outside sources, with questions left for you.
 - [Phone sync through Tine](#tine-and-phone-sync), and every message in English and Korean.
+- Add-ons: [`excudo-works`](https://github.com/cudoment/excudo-works) (npm `excudo-works`) adds a daily routine kit on top of an Excudo workspace.
 
 ## Update the engine
 
@@ -204,7 +223,7 @@ copying them, so they change with the clone: `skills --link --force` (`skills --
 After the npm package is published:
 
 ```sh
-npx -y excudo@^0.5.0 init my-memo --locale en
+npx -y excudo@^0.8.0 init my-memo --locale en
 cd my-memo
 npm install
 git init
@@ -771,7 +790,7 @@ A skill must meet every required check; the quality criteria score it from 0 to 
 
 | Criterion | Points | What it asks |
 | --- | --- | --- |
-| Required | — | `SKILL.md` with the folder's name and a description; a script; `scripts/check.*`; its cases judged as expected, at least one that must pass and one that must fail; every script run from `SKILL.md` and every script it names present; scripts that parse; no `FILL IN:` mark left; no tool calls that only one agent understands; no secret; for a learned skill, no passage copied from your requests, and every case recorded for a mistake you pointed out still a case that must fail |
+| Required | - | `SKILL.md` with the folder's name and a description; a script; `scripts/check.*`; its cases judged as expected, at least one that must pass and one that must fail; every script run from `SKILL.md` and every script it names present; scripts that parse; no `FILL IN:` mark left; no tool calls that only one agent understands; no secret; for a learned skill, no passage copied from your requests, and every case recorded for a mistake you pointed out still a case that must fail |
 | `runs-check` | 25 | `SKILL.md` runs the check in a command block |
 | `triggers` | 20 | the description says when to use the skill |
 | `usage` | 20 | each script starts with its usage |
@@ -1205,6 +1224,7 @@ workspace, `start`, `feedback` and `update` (without `--apply`) still run; every
 
 | Command | Behavior |
 | --- | --- |
+| `--version`, `-v` | Print the installed version and exit; runs inside or outside a workspace |
 | `start [--json]` | Where you stand: the first steps done on this computer and the next one, with its command; runs without a workspace too |
 | `start --report [--json]` | List every first step as done or not done, and where to continue, without changing any file |
 | `update [--channel latest\|next] [--apply] [--json]` | Check the registry (an installed prerelease follows `next`) and show release notes and commands; `--apply` installs the update and refreshes skills in a workspace |

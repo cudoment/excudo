@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 // Usage: node scripts/check.mjs [--json]
+//        node scripts/check.mjs --update <update.json> --relay <message.txt> [--relay <after-apply.txt> --applied]
+//                                                 (the owner actions an update carries were relayed)
 //        node scripts/check.mjs --self-test       (or --facts <file>: judge given facts)
 // Run in the workspace after setting it up or changing its settings. Checks what a working setup
 // needs: the settings load, the graph exists, the local engine runs, every engine skill is installed
@@ -98,7 +100,79 @@ function evaluate(facts, options = {}) {
     siteCheck(facts.site ?? { configured: false }),
   ]
   if (options.feedback || facts.feedback) checks.push(feedbackCheck(facts.feedback, options))
+  if (facts.update) checks.push(updateCheck(facts.update))
   return checks
+}
+
+// An update that carries owner actions tells the owner each version's items before the other notes, and
+// again after --apply. `relays` are the messages the agent showed, in order; `changelog` the other notes.
+function updateCheck(update) {
+  const staleJson = Boolean(update?.expectApplied && !update?.applied)
+  const stale = { id: "update-owner-actions", ok: false, message: { en: "--applied was given, but the update JSON is from before the apply: pass the output of update --apply --json.", ko: "--applied를 지정했는데 업데이트 JSON이 적용 전의 것입니다. update --apply --json의 출력을 넘길 것." } }
+  if (staleJson) return stale
+  const actions = (Array.isArray(update?.ownerActions) ? update.ownerActions : []).filter((entry) => entry && Array.isArray(entry.items) && entry.items.length)
+    .sort((a, b) => versionOrder(b.version, a.version))
+  const warning = typeof update?.missingNote === "string" && update.missingNote ? update.missingNote : ""
+  if (!actions.length && !warning) return { id: "update-owner-actions", ok: true, message: { en: "The update has no owner action to relay.", ko: "이번 업데이트에는 직접 해야 할 일이 없습니다." } }
+  const relays = Array.isArray(update.relays) ? update.relays.map(String) : []
+  // The engine counts as updated after an apply, and also when a later step of a failed apply left it installed.
+  const wanted = update.applied || update.expectApplied || update.engineChanged ? 2 : 1
+  const shown = relays.slice(0, wanted)
+  const url = warning.match(/https?:\/\/\S+/)?.[0]
+  const unwarned = warning && (relays.length < wanted || shown.some((text) => !text.includes(warning) && !(url && text.includes(url))))
+  if (!actions.length) return { id: "update-owner-actions", ok: !unwarned, message: unwarned
+    ? { en: `Owner actions could not be confirmed: relay this warning to the owner in every message (${wanted} needed): ${warning}`, ko: `직접 해야 할 일을 확인하지 못했습니다. 이 경고를 모든 전달(${wanted}개 필요)에 포함할 것: ${warning}` }
+    : { en: "The warning that owner actions could not be confirmed was relayed.", ko: "직접 해야 할 일을 확인하지 못했다는 경고를 전했습니다." } }
+  // Every general note is a "- " line of the changelog.
+  const notes = String(update.changelog ?? "").split("\n").map((line) => line.match(/^- (.+)$/)?.[1]).filter(Boolean)
+  // A section starts at its version's position and ends at the next owner-action version's position.
+  const sections = (text) => {
+    const starts = actions.map((entry) => text.indexOf(entry.version))
+    return actions.map((entry, index) => {
+      const start = starts[index]
+      const end = Math.min(text.length, ...starts.slice(index + 1).filter((at) => at > start))
+      return { entry, start, body: start < 0 ? "" : text.slice(start, end), offset: start }
+    })
+  }
+  const missing = relays.length < wanted ? "count" : shown.findIndex((text) => sections(text).some(({ entry, start, body }) => start < 0 || entry.items.some((item) => !body.includes(item))))
+  // Other notes come after the items of the last section.
+  const late = shown.findIndex((text) => {
+    const parts = sections(text)
+    const last = parts[parts.length - 1]
+    const lastAt = Math.max(...last.entry.items.map((item) => last.offset + last.body.indexOf(item)))
+    return notes.some((note) => { const at = text.indexOf(note); return at >= 0 && at < lastAt })
+  })
+  // Newest version first: the sections follow the versions' order.
+  const unsorted = shown.findIndex((text) => sections(text).some(({ start }, index, parts) => index && start < parts[index - 1].start))
+  const ok = missing === -1 && late === -1 && unsorted === -1 && !unwarned
+  return { id: "update-owner-actions", ok, message: ok
+    ? { en: `The owner actions of ${actions.map((entry) => entry.version).join(", ")} were relayed${update.applied ? " before the notes and again after --apply" : " before the notes"}.`, ko: `${actions.map((entry) => entry.version).join(", ")} 버전의 직접 해야 할 일을 전했습니다${update.applied ? "(노트보다 먼저, --apply 뒤에 다시)" : "(노트보다 먼저)"}.` }
+    : missing === "count" ? { en: `The update has owner actions: relay them per version${update.applied ? " before the other notes and again after --apply" : " before the other notes"} (${wanted} message(s) needed, ${relays.length} given).`, ko: `업데이트에 직접 해야 할 일이 있습니다. 버전마다${update.applied ? " 다른 노트보다 먼저, --apply 뒤에 다시" : " 다른 노트보다 먼저"} 전하세요(메시지 ${wanted}개가 필요한데 ${relays.length}개입니다).` }
+    : missing >= 0 ? { en: `Relay ${missing + 1} omits a version or an item of the owner actions: name every version and every item.`, ko: `${missing + 1}번째 전달에 직접 해야 할 일의 버전이나 항목이 빠졌습니다. 모든 버전과 항목을 적을 것.` }
+    : late >= 0 ? { en: `Relay ${late + 1} shows other notes before the owner actions: put the owner actions first.`, ko: `${late + 1}번째 전달에서 다른 노트가 직접 해야 할 일보다 앞에 있습니다. 직접 해야 할 일을 먼저 적을 것.` }
+    : unsorted >= 0 ? { en: `Relay ${unsorted + 1} lists the owner actions out of order: newest version first.`, ko: `${unsorted + 1}번째 전달에서 직접 해야 할 일의 버전 순서가 맞지 않습니다. 최신 버전부터 적을 것.` }
+    : { en: `Owner actions could not be confirmed: relay this warning to the owner in every message (${wanted} needed): ${warning}`, ko: `직접 해야 할 일을 확인하지 못했습니다. 이 경고를 모든 전달(${wanted}개 필요)에 포함할 것: ${warning}` } }
+}
+
+// Compare release versions with the engine's SemVer rules (compareVersions in src/update.mjs): a
+// prerelease sorts below its release, numeric identifiers compare as numbers and sort below named ones.
+function versionOrder(left, right) {
+  const parse = (version) => String(version).match(/^(\d+)\.(\d+)\.(\d+)(?:-([\da-zA-Z-]+(?:\.[\da-zA-Z-]+)*))?(?:\+.+)?$/) ?? []
+  const [a, b] = [parse(left), parse(right)]
+  for (let i = 1; i <= 3; i++) if (BigInt(a[i] ?? 0) !== BigInt(b[i] ?? 0)) return BigInt(a[i] ?? 0) > BigInt(b[i] ?? 0) ? 1 : -1
+  if (a[4] === b[4]) return 0
+  if (!a[4] || !b[4]) return a[4] ? -1 : 1
+  const parts = [a[4].split("."), b[4].split(".")]
+  for (let i = 0; i < Math.max(...parts.map((value) => value.length)); i++) {
+    const [x, y] = parts.map((value) => value[i])
+    if (x === y) continue
+    if (x === undefined || y === undefined) return x === undefined ? -1 : 1
+    const numeric = [x, y].map((value) => /^\d+$/.test(value))
+    if (numeric.every(Boolean)) return BigInt(x) > BigInt(y) ? 1 : -1
+    if (numeric[0] !== numeric[1]) return numeric[0] ? -1 : 1
+    return x > y ? 1 : -1
+  }
+  return 0
 }
 
 // Judge the actual CLI draft the agent is about to show, rather than a derived always-true flag.
@@ -145,7 +219,17 @@ function homeCheck(home) {
       : { en: "Home copies no task and every page it embeds is there.", ko: "홈은 할 일을 베끼지 않았고 임베드한 페이지가 모두 있습니다." } }
 }
 
-if (process.argv.includes("--feedback") && !process.argv.includes("--facts") && !process.argv.includes("--self-test")) {
+if (process.argv.includes("--update") && !process.argv.includes("--facts") && !process.argv.includes("--self-test")) {
+  try {
+    const { values } = parseArgs({ options: { update: { type: "string" }, relay: { type: "string", multiple: true }, applied: { type: "boolean" }, json: { type: "boolean" } } })
+    const update = { ...JSON.parse(readFileSync(values.update, "utf8")), relays: (values.relay ?? []).map((file) => readFileSync(file, "utf8")), expectApplied: Boolean(values.applied) }
+    const result = updateCheck(update)
+    const locale = (process.env.LC_ALL || process.env.LANG || "").startsWith("ko") ? "ko" : "en"
+    const check = { ...result, message: result.message[locale] }
+    console.log(values.json ? JSON.stringify({ ok: check.ok, checks: [check] }) : `${check.ok ? "✓" : "✗"} ${check.id}: ${check.message}`)
+    process.exitCode = check.ok ? 0 : 1
+  } catch (error) { console.error(error.message); process.exitCode = 2 }
+} else if (process.argv.includes("--feedback") && !process.argv.includes("--facts") && !process.argv.includes("--self-test")) {
   try {
     const { values } = parseArgs({ options: { feedback: { type: "string" }, "allow-details": { type: "boolean" }, json: { type: "boolean" } } })
     const result = feedbackCheck(JSON.parse(readFileSync(values.feedback, "utf8")), values)
@@ -155,8 +239,8 @@ if (process.argv.includes("--feedback") && !process.argv.includes("--facts") && 
     process.exitCode = check.ok ? 0 : 1
   } catch (error) { console.error(error.message); process.exitCode = 2 }
 } else await kit.runCheck({
-  usage: "Usage: node scripts/check.mjs [--json] [--feedback <draft.json>] [--allow-details] | --facts <file> | --self-test",
-  options: { feedback: { type: "string" }, "allow-details": { type: "boolean" } },
+  usage: "Usage: node scripts/check.mjs [--json] [--feedback <draft.json>] [--allow-details] | --update <update.json> --relay <message.txt>... [--applied] | --facts <file> | --self-test",
+  options: { feedback: { type: "string" }, "allow-details": { type: "boolean" }, update: { type: "string" }, relay: { type: "string", multiple: true }, applied: { type: "boolean" } },
   gather,
   evaluate,
   cases: new URL("./check.cases.json", import.meta.url),

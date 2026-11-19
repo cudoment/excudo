@@ -1,6 +1,6 @@
 # Excudo
 
-[English](README.md) | 한국어
+[English](README.md) | 한국어 | [日本語](README.ja.md) | [简体中文](README.zh-CN.md)
 
 **전기는 공짜가 아니니까, AI도 전기값은 해야지.**
 
@@ -15,9 +15,10 @@ Excudo(엑스쿠도, 패키지 `excudo`)는 개인화된 AI 환경을 지속적�
 메모를 만들고 엔진을 설치한 뒤 다음 단계를 확인하세요.
 
 ```sh
-npx -y excudo@^0.7.0 init my-memo
+npx -y excudo@^0.8.0 init my-memo
 cd my-memo
 npm install
+git init
 npx --no-install excudo start
 ```
 
@@ -34,6 +35,22 @@ npx --no-install excudo site --open
 [업데이트](#엔진-업데이트), [문제 제보](#문제-제보),
 [버그 양식](https://github.com/cudoment/excudo/issues/new?template=bug.yml)과
 [사용성 양식](https://github.com/cudoment/excudo/issues/new?template=usability.yml)을 참고하세요.
+
+## 코딩 에이전트로 설치하기
+
+비어 있는 위치에서 연 코딩 에이전트(Claude Code, Codex)에 아래 문장을 붙여 넣으세요.
+
+> https://github.com/cudoment/excudo 의 README.ko.md에 있는 "코딩 에이전트로 설치하기" 절을 따라 새 폴더에 Excudo를 설치해 줘.
+
+에이전트는 아래 규칙을 따릅니다. 4번 규칙의 명령과 보고서 확인만 실행하며, 5분 안에 시작하기의 웹 사이트 블록은 실행하지 않습니다.
+
+1. Node.js가 22.16 이상인지 확인합니다(`node --version`). 아니면 멈추고 https://nodejs.org 를 안내합니다.
+2. 폴더 이름과 파일의 언어(`en` 또는 `ko`)를 한 번만 묻고, 이후에는 다시 묻지 않습니다. 사용자가 한국어를 읽지 않으면 `en`을 고릅니다. 파일의 언어와 관계없이 사용자와는 사용자의 언어(일본어, 중국어 등)로 계속 대화합니다.
+3. 전역 설치는 하지 않습니다. `npm install -g`도, npm 자체 캐시를 제외한 새 폴더 밖의 변경도 하지 않습니다.
+4. `npx -y excudo@^0.8.0 init <폴더> --locale <언어>`를 실행한 뒤 다음 한 줄을 실행합니다: `cd <폴더> && npm install && git init && npx --no-install excudo start --report --json`. `init` 뒤의 모든 명령은 `<폴더>` 안에서 실행합니다. `init`은 git을 실행하지 않으므로 `git init`도 순서에 들어 있습니다.
+5. 보고서(`--report --json`)를 읽어 확인합니다. `workspace`, `install`, `git`, `skills` 단계가 모두 `done`이면 설치에 성공한 것입니다. `done`이 아닌 단계가 있으면 그 단계의 `id`와 `state`를 보여 주고 사용자에게 어떻게 할지 묻습니다. 원인을 짐작하거나 다른 명령을 실행하지 않습니다.
+6. 명령이 실패하면 멈추고 오류 출력의 마지막 몇 줄을 보여 준 뒤 사용자에게 묻습니다. 임의로 고치거나 다른 명령을 시도하지 않습니다.
+7. 마지막에 남은 다음 단계, 곧 `stoppedAt`이 가리키는 단계를 사용자에게 넘깁니다. 그 단계의 `run`, `ask`, `setting`을 그대로 전하고 직접 실행하지는 않습니다.
 
 ## 시작하기
 
@@ -52,12 +69,13 @@ npx --no-install excudo site --open
 **필요할 때 할 일**:
 
 1. **작업자와 독립 검토자 정하기**: 도구, 모델과 추론 수준을 직접 고르기; `npx --no-install excudo agents`; 또는 에이전트에게 “작업자와 검토자 정해 줘”
-2. **Tine**: 그래프 폴더(notes/)를 Tine으로 열어 메모를 읽고 씁니다; https://tine.page
-3. **휴대폰**: 그래프 폴더를 Syncthing으로 동기화하고 휴대폰의 Tine으로 엽니다; 또는 에이전트에게 “휴대폰에서도 보고 싶어”; https://syncthing.net
-4. **내 홈**: 첫 화면을 직접 씁니다. 전체 트리는 아카이브로 옮겨 갑니다; `npx --no-install excudo home --own`; 또는 에이전트에게 “홈 구성 바꿔 줘”
-5. **외부 업무**: 로그인한 브라우저로 이슈 트래커나 팀 게시판의 일을 가져옵니다; `npx --no-install excudo sources`; 또는 에이전트에게 “외부 할 일 가져와 줘”
-6. **웹 사이트로 보는 메모**: 내 로그인으로만 열리는 Vercel에 올려 컴퓨터와 휴대폰에서 봅니다; `npx --no-install excudo site setup`; 또는 에이전트에게 “사이트 설정해 줘”
-7. **웹 사이트에서 바꾸는 할 일 상태**: 웹 사이트에서 할 일 상태를 바꾸면 이 컴퓨터가 메모에 반영합니다; `site: { inbox: true }`; `npx --no-install excudo site setup`; 또는 에이전트에게 “사이트에서 할 일 상태를 바꾸게 해 줘”
+2. **요청에서 배우기**: 이 컴퓨터에서 코딩 에이전트에게 보낸 요청을 에이전트가 읽고, 오래 지킬 결정은 관심사로, 반복되는 일은 스스로 검사하는 스킬로 만들게 합니다(README의 '요청에서 배우기'와 '스킬은 코드를 품습니다' 참고). interests 설정에 적은 이름의 노드가 있어야 하므로 그 노드를 먼저 만드세요; `conversations: true, interests: "Interests"`; 또는 에이전트에게 “내 요청에서 배우게 해 줘”; https://github.com/cudoment/excudo/blob/main/README.ko.md#요청에서-배우기
+3. **Tine**: 그래프 폴더(notes/)를 Tine으로 열어 메모를 읽고 씁니다; https://tine.page
+4. **휴대폰**: 그래프 폴더를 Syncthing으로 동기화하고 휴대폰의 Tine으로 엽니다; 또는 에이전트에게 “휴대폰에서도 보고 싶어”; https://syncthing.net
+5. **내 홈**: 첫 화면을 직접 씁니다. 전체 트리는 아카이브로 옮겨 갑니다; `npx --no-install excudo home --own`; 또는 에이전트에게 “홈 구성 바꿔 줘”
+6. **외부 업무**: 로그인한 브라우저로 이슈 트래커나 팀 게시판의 일을 가져옵니다; `npx --no-install excudo sources`; 또는 에이전트에게 “외부 할 일 가져와 줘”
+7. **웹 사이트로 보는 메모**: 내 로그인으로만 열리는 Vercel에 올려 컴퓨터와 휴대폰에서 봅니다; `npx --no-install excudo site setup`; 또는 에이전트에게 “사이트 설정해 줘”
+8. **웹 사이트에서 바꾸는 할 일 상태**: 웹 사이트에서 할 일 상태를 바꾸면 이 컴퓨터가 메모에 반영합니다; `site: { inbox: true }`; `npx --no-install excudo site setup`; 또는 에이전트에게 “사이트에서 할 일 상태를 바꾸게 해 줘”
 
 `npx -y excudo start`(작업 폴더에서는 `npx --no-install excudo start`)로 진행 상태를 확인합니다. `excudo start --report`는 모든 단계와 이어서 할 곳을 보여 줍니다.
 <!-- /excudo:start -->
@@ -107,6 +125,7 @@ Excudo는 [cudoc](https://www.npmjs.com/package/@cudoment/cudoc)(`@cudoment/cudo
 - 블록 id, 참조, 임베드를 검사하고 고칩니다(`fix`).
 - 회고, 스킬 관리, 외부 출처 갱신을 예약 실행하고, 판단이 필요한 것은 질문으로 남깁니다.
 - [Tine으로 휴대폰 동기화](#tine과-휴대폰-동기화)를 하며, 모든 메시지를 영어와 한국어로 제공합니다.
+- 애드온: [`excudo-works`](https://github.com/cudoment/excudo-works)(npm `excudo-works`)는 Excudo 작업 폴더 위에 일상 루틴 도구 모음을 더합니다.
 
 ## 엔진 업데이트
 
@@ -204,7 +223,7 @@ npx skills add cudoment/excudo
 npm 게시 뒤에는 다음을 씁니다.
 
 ```sh
-npx -y excudo@^0.5.0 init my-memo --locale ko
+npx -y excudo@^0.8.0 init my-memo --locale ko
 cd my-memo
 npm install
 git init
@@ -727,7 +746,7 @@ days: 7
 
 | 기준 | 점수 | 확인하는 것 |
 | --- | --- | --- |
-| 필수 | — | 폴더 이름과 설명이 있는 `SKILL.md`, 스크립트, `scripts/check.*`, 경우를 예상대로 판정함(통과해야 하는 경우와 실패해야 하는 경우가 하나 이상씩), `SKILL.md`가 모든 스크립트를 실행하고 가리킨 스크립트가 모두 있음, 스크립트 문법, 남은 `FILL IN:` 표시 없음, 특정 에이전트만 아는 도구 호출 없음, 비밀 값 없음, 학습 스킬이면 요청 문구를 옮겨 적지 않고 사용자가 지적한 실수로 기록한 경우가 모두 실패해야 하는 경우로 남아 있음 |
+| 필수 | - | 폴더 이름과 설명이 있는 `SKILL.md`, 스크립트, `scripts/check.*`, 경우를 예상대로 판정함(통과해야 하는 경우와 실패해야 하는 경우가 하나 이상씩), `SKILL.md`가 모든 스크립트를 실행하고 가리킨 스크립트가 모두 있음, 스크립트 문법, 남은 `FILL IN:` 표시 없음, 특정 에이전트만 아는 도구 호출 없음, 비밀 값 없음, 학습 스킬이면 요청 문구를 옮겨 적지 않고 사용자가 지적한 실수로 기록한 경우가 모두 실패해야 하는 경우로 남아 있음 |
 | `runs-check` | 25 | `SKILL.md`가 명령 블록에서 검사를 실행함 |
 | `triggers` | 20 | 설명이 스킬을 언제 쓰는지 밝힘 |
 | `usage` | 20 | 스크립트마다 맨 위에 사용법이 있음 |
@@ -1164,6 +1183,7 @@ import가 실패하거나 값이 다르면 원문을 복원하고 필요한 수�
 
 | 명령 | 동작 |
 | --- | --- |
+| `--version`, `-v` | 설치된 버전을 출력하고 끝냅니다. 작업 폴더 안팎에서 모두 실행됩니다 |
 | `start [--json]` | 지금 어디까지 했는지 보여 줍니다. 이 컴퓨터에서 마친 처음 단계와 다음 단계를 명령과 함께 알려 주며, 작업 폴더가 없어도 실행됩니다 |
 | `start --report [--json]` | 처음 단계마다 마쳤는지와 이어서 할 곳을 파일을 바꾸지 않고 알려 줍니다 |
 | `update [--channel latest\|next] [--apply] [--json]` | 레지스트리를 확인하고 변경 이력과 명령을 보여 줍니다. 설치한 버전이 프리릴리스면 `next`를 따릅니다. `--apply`는 작업 폴더에서 업데이트를 설치하고 스킬을 갱신합니다 |

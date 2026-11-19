@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.8.0
+
+### CLI
+
+- Print the installed version with --version and -v
+
+### Docs
+
+- Add Japanese and Simplified Chinese install guides and check all four READMEs
+- Limit the agent install to rule 4 and the report, ask on open steps and name README.ko.md in Korean
+- Finish the agent install with git init, a report-based success rule and a README range check
+- Add install-with-a-coding-agent section, an engine-only note in AGENTS.md and an add-ons pointer
+
+### Release
+
+- Raise the install ranges to 0.8.0
+- Add a pre-publish install test that installs the packed tarball for en and ko
+- Let the READMEs keep the last stable range while the version is a prerelease
+- Keep every version's owner actions in package metadata and use them in update
+- Group commits marked Area!: as owner actions in notes and update output
+
+### Setup
+
+- Check each version's owner action items inside its own relay section and require the unconfirmed warning
+- Compare prerelease identifiers numerically and require every item of a newer version before the older one in the relay check
+- Validate the applied JSON first, relay the unconfirmed owner actions warning and check note and version order of the relay
+- Check the apply JSON and verbatim owner actions; warn about unlisted owner actions only without metadata
+- Relay an update's owner actions first and again after apply, and check it
+
+### Start
+
+- Require the interests node for the learning step and keep wrong settings from stopping the report
+- Mark the learning step done only when logs are read and interests is set
+- Add a step for learning from requests, where conversations and skill learning are explained
+
+### Test
+
+- Use a far-future registry version in the CLI update tests so a release bump does not break them
+
+### Update
+
+- Warn that owner actions are unconfirmed when the registry metadata lists none and no skipped-version note applies
+- Report engineChanged on a half-applied update and require the post-apply relay for it; tidy install rules and the learning probe
+
 ## 0.7.0
 
 ### Changelog

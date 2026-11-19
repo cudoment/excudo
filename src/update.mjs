@@ -48,6 +48,34 @@ export function changelogBetween(text, installed, latest) {
     .map(([section]) => section.trim()).join("\n\n")
 }
 
+/** Pull each version's "Owner action" group out of release notes: what to do after updating, and the notes without it. */
+export function splitOwnerActions(text) {
+  const actions = []
+  const rest = String(text ?? "").replaceAll("\r\n", "\n").split(/^(?=## )/m).map((section) => {
+    const version = section.match(/^## (?:\[)?(\d+\.\d+\.\d+(?:-[\da-zA-Z.-]+)?)/)?.[1]
+    if (!version) return section
+    return section.replace(/^### Owner action[ \t]*\n([\s\S]*?)(?=^#{2,3} |$(?![\s\S]))/m, (_, body) => {
+      const items = body.split("\n").map((line) => line.match(/^- (.+)$/)?.[1]).filter(Boolean)
+      if (items.length) actions.push({ version, items })
+      return ""
+    })
+  }).join("").replace(/\n{3,}/g, "\n\n").trim()
+  return { actions, rest }
+}
+
+/** Owner actions from the printed notes and from the metadata's list of every version, once per version, newest first. */
+export function mergeOwnerActions(fromNotes, fromMetadata, installed, latest) {
+  const byVersion = new Map()
+  for (const entry of [...fromMetadata, ...fromNotes]) {
+    if (typeof entry?.version !== "string" || !VERSION.test(entry.version) || !Array.isArray(entry.items)) continue
+    if (compareVersions(entry.version, installed) <= 0 || compareVersions(entry.version, latest) > 0) continue
+    const items = byVersion.get(entry.version) ?? []
+    for (const item of entry.items) if (typeof item === "string" && item && !items.includes(item)) items.push(item)
+    byVersion.set(entry.version, items)
+  }
+  return [...byVersion].map(([version, items]) => ({ version, items })).sort((a, b) => compareVersions(b.version, a.version))
+}
+
 /** Classify npm failures without suggesting login for network errors or offline retries for missing tags. */
 export function npmFailure(response, tag) {
   let code = response?.error?.code ?? ""
@@ -100,6 +128,7 @@ export async function updatePackage(ws, { channel, apply = false, npm = runNpm,
       try { changelog = readFileSync(new URL("../CHANGELOG.md", import.meta.url), "utf8") } catch { changelog = "" }
     }
     result.changelog = changelogBetween(changelog, installed, result.latest)
+    let metadataActions = [], metadataListed = false
     try {
       const metadata = npm(["view", `excudo@${result.latest}`, "--json"], { cwd: ws.root })
       if (metadata.status === 0 && !metadata.error) {
@@ -107,9 +136,15 @@ export async function updatePackage(ws, { channel, apply = false, npm = runNpm,
         const published = data.excudoReleaseNotes?.version === result.latest ? data.excudoReleaseNotes.markdown : null
         const notes = changelogBetween(published ?? data.changelog ?? data.CHANGELOG ?? data.readme ?? "", installed, result.latest)
         if (notes) result.changelog = changelogBetween(`${notes}\n\n${result.changelog}`, installed, result.latest)
+        // The published metadata lists the owner actions of every version, also those past the notes it prints.
+        if (data.excudoReleaseNotes?.version === result.latest && Array.isArray(data.excudoReleaseNotes.ownerActions)) { metadataActions = data.excudoReleaseNotes.ownerActions; metadataListed = true }
       }
     } catch { /* Notes remain reachable through the versioned GitHub URLs. */ }
-    if (!result.changelog) result.changelogNote = m["update-no-notes"]
+    // What the owner must do goes first, apart from the other notes.
+    const split = splitOwnerActions(result.changelog)
+    result.ownerActions = mergeOwnerActions(split.actions, metadataActions, installed, result.latest)
+    result.changelog = split.rest
+    if (!result.changelog && !result.ownerActions.length) result.changelogNote = m["update-no-notes"]
     // Name releases between the installed one and the target that no notes above describe.
     try {
       const listed = npm(["view", "excudo", "versions", "--json"], { cwd: ws.root })
@@ -121,9 +156,11 @@ export async function updatePackage(ws, { channel, apply = false, npm = runNpm,
           && compareVersions(version, installed) > 0 && compareVersions(version, result.latest) <= 0
           && (!prerelease(version) || prerelease(result.latest) || prerelease(installed)) && !shown.has(version))
           .sort(compareVersions)
-        if (result.missingVersions.length) result.missingNote = format(m["update-missing-notes"], { versions: result.missingVersions.join(", "), url: result.changelogUrl })
+        if (result.missingVersions.length) result.missingNote = format(m[metadataActions.length || metadataListed ? "update-missing-notes" : "update-missing-notes-unlisted"], { versions: result.missingVersions.join(", "), url: result.changelogUrl })
       }
     } catch { /* The list is a courtesy; the links above still lead to every release. */ }
+    // Without the published list, and without the note above, the owner actions of these releases are unconfirmed.
+    if (!metadataListed && !result.missingNote) result.missingNote = format(m["update-owner-actions-unconfirmed"], { latest: result.latest, url: result.changelogUrl })
   } else result.commands = [SKILLS_COMMAND]
   if (!apply) return result
   if (!ws.hasConfig) throw new Error(m["update-workspace"])
@@ -135,6 +172,8 @@ export async function updatePackage(ws, { channel, apply = false, npm = runNpm,
     try { ran = npm(args, { cwd: ws.root, apply: true, binary }) } catch (error) { ran = { status: 1, error } }
     if (ran.status !== 0 || ran.error) {
       result.state = "failed"; result.code = 1
+      // The engine itself may already be installed when a later step fails: the owner acts on the new release.
+      result.engineChanged = result.newer && index > 0
       result.failedCommand = shown(steps[index])
       result.remainingCommands = steps.slice(index + 1).map(shown)
       result.note = format(m["update-apply-failed"], { command: result.failedCommand })
@@ -144,6 +183,7 @@ export async function updatePackage(ws, { channel, apply = false, npm = runNpm,
     if (binary === "npx") result.skillRefreshOutput = String(ran.stdout ?? "").trim()
   }
   result.applied = true
+  result.engineChanged = result.newer
   result.note = format(m[result.newer ? "update-applied" : "update-refreshed"], result)
   result.followUp = ["npx --no-install excudo start --report", "node .agents/skills/excudo-setup/scripts/check.mjs"]
   return result

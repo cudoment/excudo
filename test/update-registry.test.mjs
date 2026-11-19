@@ -43,25 +43,44 @@ test("apply exposes the npm stderr tail and successful follow-up checks", async 
   assert.equal(failed.code, 1)
   assert.match(failed.stderr, /E403: access denied/)
   assert.ok(failed.stderr.split("\n").length <= 8)
+  assert.equal(failed.engineChanged, false, "the engine install itself failed")
+  const half = await updatePackage(ws(), { installed: "0.7.0", apply: true,
+    npm: (args, options) => args[0] === "view" ? answer(args[2] === "version" ? "0.8.0" : {}) : options.binary === "npx" ? { status: 1, stderr: "skills failed" } : { status: 0 } })
+  assert.equal(half.state, "failed")
+  assert.equal(half.engineChanged, true, "the engine was installed before the skills step failed")
+  assert.equal(half.applied, false)
   const success = await updatePackage(ws(), { installed: "0.7.0", apply: true,
     npm: (args) => args[0] === "view" ? answer(args[2] === "version" ? "0.8.0" : {}) : { status: 0, stdout: "A skill: preserved; backup available" } })
   assert.deepEqual(success.followUp, ["npx --no-install excudo start --report", "node .agents/skills/excudo-setup/scripts/check.mjs"])
   assert.match(success.skillRefreshOutput, /preserved/)
+  assert.equal(success.engineChanged, true)
 })
 
 test("apply CLI prints preserved-skill output, release links and setup follow-ups", () => {
   const root = tempDir(), npm = join(root, "npm-cli.cjs")
   writeFileSync(join(root, "excudo.config.mjs"), "export default { locale: 'en' }\n")
-  writeFileSync(npm, 'if (process.argv[2] === "view") console.log(JSON.stringify(process.argv[4] === "version" ? "0.8.0" : {}))\n')
+  writeFileSync(npm, 'if (process.argv[2] === "view") console.log(JSON.stringify(process.argv[4] === "version" ? "0.99.0" : {}))\n')
   writeFileSync(join(root, "npx-cli.js"), 'console.log("excudo-capture: preserved\\nKept owner copy; backup: skill-backups/example")\n')
   const child = spawnSync(process.execPath, [resolve("bin/excudo.mjs"), "update", "--apply", "--root", root],
     { encoding: "utf8", env: { ...process.env, npm_execpath: npm } })
   assert.equal(child.status, 0, child.stderr)
   assert.match(child.stdout, /excudo-capture: preserved/)
   assert.match(child.stdout, /skill-backups\/example/)
-  assert.match(child.stdout, /releases\/tag\/v0\.8\.0/)
+  assert.match(child.stdout, /releases\/tag\/v0\.99\.0/)
   assert.match(child.stdout, /excudo start --report/)
   assert.match(child.stdout, /node \.agents\/skills\/excudo-setup\/scripts\/check\.mjs/)
+})
+
+test("update CLI prints the Owner action group before the other notes", () => {
+  const root = tempDir(), npm = join(root, "npm-cli.cjs")
+  writeFileSync(join(root, "excudo.config.mjs"), "export default { locale: 'en' }\n")
+  const notes = "## 0.99.0\n\n### Owner action\n\n- Settings: Rename the inbox setting\n\n### Site\n\n- Open Home\n"
+  writeFileSync(npm, `if (process.argv[2] === "view") console.log(JSON.stringify(process.argv[4] === "version" ? "0.99.0" : { excudoReleaseNotes: { version: "0.99.0", markdown: ${JSON.stringify(notes)} } }))\n`)
+  const child = spawnSync(process.execPath, [resolve("bin/excudo.mjs"), "update", "--root", root],
+    { encoding: "utf8", env: { ...process.env, npm_execpath: npm } })
+  assert.equal(child.status, 0, child.stderr)
+  assert.match(child.stdout, /Owner action after updating:\n  0\.99\.0\n  - Settings: Rename the inbox setting\n[\s\S]*### Site\n\n- Open Home/)
+  assert.doesNotMatch(child.stdout, /### Owner action/)
 })
 
 test("npm's real publication preparation retains generated release-note metadata", async (t) => {
