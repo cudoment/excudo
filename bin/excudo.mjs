@@ -74,6 +74,7 @@ import {
 import { openSite, publishSite, publishStatus, setupSite } from "../src/publish.mjs"
 import { pullInbox } from "../src/pull.mjs"
 import { saveGraph } from "../src/save.mjs"
+import { autoPush, setupSync, syncRun, syncStatus } from "../src/sync.mjs"
 import { startReport, startStatus } from "../src/start.mjs"
 import { updatePackage } from "../src/update.mjs"
 import { openLocalSite } from "../src/open.mjs"
@@ -192,6 +193,15 @@ Commands
   site pull         Bring in the task states chosen on the website (every five minutes; at once when
                     a page asks or with --now), commit the pages, close the issues, publish again
                     --now   --dry-run   --json
+  sync              Keep this workspace in step across computers (the sync setting): pull, then push
+                    --pull   only bring changes in   --push   only send   --status   where it stands, no network
+                    --json   Uncommitted tracked files are refused (excudo save first, or sync.auto saves them);
+                    a merge conflict is aborted and named, never resolved or forced
+  sync setup github  Write the sync setting for a private GitHub repository   --remote <name> (default origin)
+                    --create <owner/repo>: make a private repository with gh and add it   --auto
+  sync setup drive --folder <path>  Write the sync setting for a folder Google Drive syncs (each computer writes
+                    its own git bundle there)   --machine <name>   --id <id>: join the memo another computer
+                    made   --new: a new memo beside others in that folder   --auto: save pushes, agents pull first
   receive --input <file|->  Bring in the task states chosen on the website: a batch, batches, or issues
                     from gh issue list --json number,body   --dry-run   --json
   skills            Install the agent skills into this workspace
@@ -225,86 +235,109 @@ Options
   -v, --version     print the installed version
   -h, --help        show this help`
 
-const { values, positionals } = parseArgs({
-  allowPositionals: true,
-  options: {
-    index: { type: "string" },
-    tool: { type: "string" },
-    model: { type: "string" },
-    effort: { type: "string" },
-    new: { type: "boolean" },
-    path: { type: "string" },
-    node: { type: "string" },
-    limit: { type: "string" },
-    check: { type: "boolean" },
-    lines: { type: "string" },
-    to: { type: "string" },
-    reference: { type: "string" },
-    pointer: { type: "string", multiple: true },
-    history: { type: "boolean" },
-    root: { type: "string" },
-    graph: { type: "string" },
-    locale: { type: "string" },
-    example: { type: "boolean" },
-    force: { type: "boolean" },
-    own: { type: "boolean" },
-    home: { type: "boolean" },
-    "dry-run": { type: "boolean" },
-    action: { type: "string" },
-    args: { type: "string" },
-    input: { type: "string" },
-    note: { type: "string", multiple: true },
-    wrote: { type: "string", multiple: true },
-    for: { type: "string" },
-    candidates: { type: "boolean" },
-    since: { type: "string" },
-    until: { type: "string" },
-    expect: { type: "string" },
-    all: { type: "boolean" },
-    global: { type: "boolean" },
-    replace: { type: "string", multiple: true },
-    "replace-all": { type: "boolean" },
-    link: { type: "boolean" },
-    copy: { type: "boolean" },
-    from: { type: "string" },
-    requested: { type: "boolean" },
-    workspace: { type: "boolean" },
-    why: { type: "string" },
-    case: { type: "string" },
-    reason: { type: "string" },
-    minutes: { type: "string" },
-    settle: { type: "string" },
-    days: { type: "string" },
-    step: { type: "string", multiple: true },
-    failed: { type: "boolean" },
-    deferred: { type: "boolean" },
-    full: { type: "boolean" },
-    summary: { type: "string" },
-    file: { type: "string" },
-    stamp: { type: "string" },
-    only: { type: "string", multiple: true },
-    generated: { type: "boolean" },
-    status: { type: "string" },
-    out: { type: "string" },
-    mode: { type: "string" },
-    channel: { type: "string" },
-    apply: { type: "boolean" },
-    report: { type: "boolean" },
-    title: { type: "string" },
-    message: { type: "string" },
-    details: { type: "boolean" },
-    project: { type: "string" },
-    open: { type: "boolean" },
-    now: { type: "boolean" },
-    canceled: { type: "boolean" },
-    json: { type: "boolean" },
-    help: { type: "boolean", short: "h" },
-    version: { type: "boolean", short: "v" },
-  },
-})
+// `sync --status` is a flag, while `runs add --status` takes a value: only the sync command reads the flag.
+const argv = process.argv.slice(2)
+const syncPrefix = argv.includes("sync")
+const OPTIONS = {
+  index: { type: "string" },
+  tool: { type: "string" },
+  model: { type: "string" },
+  effort: { type: "string" },
+  new: { type: "boolean" },
+  path: { type: "string" },
+  node: { type: "string" },
+  limit: { type: "string" },
+  check: { type: "boolean" },
+  lines: { type: "string" },
+  to: { type: "string" },
+  reference: { type: "string" },
+  pointer: { type: "string", multiple: true },
+  history: { type: "boolean" },
+  root: { type: "string" },
+  graph: { type: "string" },
+  locale: { type: "string" },
+  example: { type: "boolean" },
+  force: { type: "boolean" },
+  own: { type: "boolean" },
+  home: { type: "boolean" },
+  "dry-run": { type: "boolean" },
+  action: { type: "string" },
+  args: { type: "string" },
+  input: { type: "string" },
+  note: { type: "string", multiple: true },
+  wrote: { type: "string", multiple: true },
+  for: { type: "string" },
+  candidates: { type: "boolean" },
+  since: { type: "string" },
+  until: { type: "string" },
+  expect: { type: "string" },
+  all: { type: "boolean" },
+  global: { type: "boolean" },
+  replace: { type: "string", multiple: true },
+  "replace-all": { type: "boolean" },
+  link: { type: "boolean" },
+  copy: { type: "boolean" },
+  from: { type: "string" },
+  requested: { type: "boolean" },
+  workspace: { type: "boolean" },
+  why: { type: "string" },
+  case: { type: "string" },
+  reason: { type: "string" },
+  minutes: { type: "string" },
+  settle: { type: "string" },
+  days: { type: "string" },
+  step: { type: "string", multiple: true },
+  failed: { type: "boolean" },
+  deferred: { type: "boolean" },
+  full: { type: "boolean" },
+  summary: { type: "string" },
+  file: { type: "string" },
+  stamp: { type: "string" },
+  only: { type: "string", multiple: true },
+  generated: { type: "boolean" },
+  status: { type: "string" },
+  out: { type: "string" },
+  mode: { type: "string" },
+  channel: { type: "string" },
+  apply: { type: "boolean" },
+  report: { type: "boolean" },
+  title: { type: "string" },
+  message: { type: "string" },
+  details: { type: "boolean" },
+  project: { type: "string" },
+  open: { type: "boolean" },
+  now: { type: "boolean" },
+  canceled: { type: "boolean" },
+  json: { type: "boolean" },
+  help: { type: "boolean", short: "h" },
+  version: { type: "boolean", short: "v" },
+}
+// Only the sync command takes these: every other command rejects them as unknown, as before sync existed.
+const SYNC_OPTIONS = {
+  pull: { type: "boolean" },
+  push: { type: "boolean" },
+  "sync-status": { type: "boolean" },
+  machine: { type: "string" },
+  remote: { type: "string" },
+  create: { type: "string" },
+  folder: { type: "string" },
+  auto: { type: "boolean" },
+  id: { type: "string" },
+}
+// The command is the first positional argument, after the options and their values (`--machine runs` is a value, not the runs command).
+const syncMap = (args) => args.map((arg) => (arg === "--status" ? "--sync-status" : arg))
+let syncCommand = false
+if (syncPrefix) {
+  try { syncCommand = parseArgs({ args: syncMap(argv), strict: false, allowPositionals: true, options: { ...OPTIONS, ...SYNC_OPTIONS } }).positionals[0] === "sync" } catch {}
+}
+const parse = (args, extra = {}) => parseArgs({ args, allowPositionals: true, options: { ...OPTIONS, ...extra } })
+let parsed = parse(syncCommand ? syncMap(argv) : argv, syncCommand ? SYNC_OPTIONS : {})
+// The word sync among another command's arguments does not open them: parse again as that command, which fails on them as it always did.
+if (syncCommand && parsed.positionals[0] !== "sync") parsed = parse(argv)
+const { values, positionals } = parsed
 const [command, ...args] = positionals
 const COMMANDS = new Set(["feedback", "update", "instructions", "agents", "start", "init", "build", "home", "check", "tree", "review", "move", "remove", "rename", "find", "inbox", "archive", "sources", "ingest",
-  "changes", "requests", "workspaces", "fix", "mirror", "snapshot", "save", "export", "site", "skills", "idle", "activity", "sessions", "queue", "runs", "backup", "receive"])
+  "changes", "requests", "workspaces", "fix", "mirror", "snapshot", "save", "export", "site", "skills", "idle", "activity", "sessions", "queue", "runs", "backup", "receive", "sync"])
 
 if (values.version) {
   console.log(JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version)
@@ -723,6 +756,8 @@ async function main() {
       if (!message) throw new Error(ws.labels.messages["save-message"])
       return withGraphAsync(ws, () => save(ws, message, { only: values.only ?? (values.generated ? [] : undefined) }))
     }
+    case "sync":
+      return syncCommandRun(ws)
     case "receive": {
       const m = ws.labels.messages
       if (!values.input) throw new Error(m["receive-input"])
@@ -933,8 +968,70 @@ async function save(ws, message, { only } = {}) {
   const code = printBuild(ws, result.built)
   if (code) return code
   const state = result.state
+  // Only an owner who set sync.auto pushes here; a workspace without it runs no extra git command.
+  const pushed = ws.sync?.auto ? await autoPush(ws, { committed: state === "committed" }) : null
   console.log(state === "committed" ? format(ws.labels.messages.committed, { message }) : state === "not-git" ? format(ws.labels.messages["not-git"], { dir: ws.graphDir }) : ws.labels.messages["nothing-to-commit"])
+  // A failed push is a warning: the commit stays and `excudo sync` sends it later.
+  if (pushed) {
+    const m = ws.labels.sync
+    if (pushed.code) console.log(`! ${pushed.error?.message ?? ""}`)
+    else console.log(format(m[pushed.pushed?.state === "up-to-date" ? "push-up-to-date" : "pushed"], { to: pushed.pushed?.to }))
+  }
   return 0
+}
+
+/** `sync [--pull|--push|--status]` and `sync setup github|drive`: the workspace kept in step across computers (sync.mjs). */
+async function syncCommandRun(ws) {
+  const m = ws.labels.sync
+  const say = values.json ? () => {} : (line) => console.log(line)
+  const [action, method] = args
+  if (action === "setup") {
+    const result = setupSync(ws, { method, remote: values.remote, create: values.create, folder: values.folder, machine: values.machine, id: values.id, fresh: values.new, auto: values.auto, say })
+    if (values.json) console.log(JSON.stringify(result, null, 2))
+    else if (!result.code) {
+      say(format(m["setup-done"], { method: method === "github" ? "GitHub" : "Google Drive", id: result.setting.id }))
+      if (result.machine) say(format(m["setup-machine"], { machine: result.machine }))
+      if (result.ruleAdded) say(m["setup-rule"])
+      say(m[values.id ? "setup-next-join" : result.setting.auto ? "setup-next-auto" : "setup-next"])
+    }
+    return result.code
+  }
+  if (action !== undefined && action !== "status") throw new Error(m["setup-usage"])
+  if (action === "status" || values["sync-status"]) {
+    const status = syncStatus(ws)
+    if (values.json) { console.log(JSON.stringify(status, null, 2)); return status.configured && !status.valid ? 1 : 0 }
+    if (!status.configured) { console.log(m["not-set"]); return 0 }
+    if (!status.valid) { console.log(status.error); return 1 }
+    console.log(m["status-heading"])
+    console.log(status.method === "github" ? format(m["status-github"], { remote: status.remote, branch: status.branch ?? "-" })
+      : format(m["status-drive"], { folder: status.folder, id: status.id, machine: status.machine }))
+    console.log(format(m["status-auto"], { auto: m[status.auto ? "yes" : "no"] }))
+    console.log(format(m["status-last"], { at: status.lastSync ?? m["status-never"] }))
+    if (status.ahead !== null) console.log(format(m["status-ahead"], { where: status.method === "github" ? `${status.remote}/${status.branch}` : m["status-others"], ahead: status.ahead, behind: status.behind }))
+    else console.log(m["status-ahead-unknown"])
+    if (status.method === "drive") {
+      if (status.folderExists === false) console.log(m["status-folder-missing"])
+      if (!status.machines.length) console.log(m["status-no-machines"])
+      else {
+        console.log(m["status-machines"])
+        for (const item of status.machines) console.log(`  ${format(m["status-machine"], { ...item, at: item.at.slice(0, 16).replace("T", " "), ahead: item.ahead ?? "-", behind: item.behind ?? "-" })}`)
+      }
+    }
+    if (status.uncommitted) console.log(format(m["status-uncommitted"], { n: status.uncommitted }))
+    if (status.lastError) console.log(format(m["status-error"], { at: status.lastError.at, message: status.lastError.message }))
+    return 0
+  }
+  const only = values.pull && !values.push ? "pull" : values.push && !values.pull ? "push" : "both"
+  const result = await withGraphAsync(ws, () => syncRun(ws, { pull: only !== "push", push: only !== "pull", say }))
+  if (values.json) { console.log(JSON.stringify(result, null, 2)); return result.code }
+  const aside = relative(process.cwd(), join(ws.cacheDir, "sync-before")) || "."
+  for (const item of result.pulled) console.log(format(m[`pulled-${item.state}`] ?? m["pulled-merged"], { source: item.source, moved: item.moved?.length ?? 0, aside }))
+  if (result.built?.state === "committed") console.log(format(m["built-committed"], { written: result.built.written.join(", ") }))
+  if (result.pushed) console.log(format(m[result.pushed.state === "up-to-date" ? "push-up-to-date" : "pushed"], { to: result.pushed.to }))
+  for (const warning of result.warnings) console.log(`! ${warning}`)
+  if (result.error) { console.error(result.error.message); return 1 }
+  console.log(m[only === "pull" ? "pull-only-done" : only === "push" ? "push-only-done" : "synced"])
+  return result.code
 }
 
 function learnedSkills(ws) {

@@ -125,14 +125,14 @@ export function graphAt(ws, rev) {
   return listed.stdout.split("\0").filter((file) => file.endsWith(".md")).map((file) => ({ file, text: git(ws, "show", `${rev}:./${file}`).stdout }))
 }
 
-/** The Markdown files of the graph now, as { file, text } with paths from the workspace root. */
+/** The Markdown files of the graph now, as { file, text } with NFC paths from the workspace root, like `graphAt`; each is read through its on-disk path. */
 export function graphNow(ws) {
   const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name)
     if (entry.name.startsWith(".") || entry.name === "logseq") return []
     return statSync(path).isDirectory() ? walk(path) : entry.name.endsWith(".md") ? [path] : []
   })
-  return existsSync(ws.graphDir) ? walk(ws.graphDir).map((path) => ({ file: relative(ws.root, path), text: readFileSync(path, "utf8") })) : []
+  return existsSync(ws.graphDir) ? walk(ws.graphDir).map((path) => ({ file: relative(ws.root, path).normalize("NFC"), text: readFileSync(path, "utf8") })) : []
 }
 
 const TASK = /^\s*- (TODO|DOING|WAITING|LATER|NOW|DONE|CANCELED|CANCELLED)\s+(.*)$/
@@ -205,7 +205,9 @@ const flat = (text) => text.normalize("NFC").replace(/\s+/g, " ").trim()
  * when it has none; `text` is the whole item, its lines joined, without the list marker.
  */
 export function templateRules(ws) {
-  const rendered = renderTemplate("AGENTS.md", { locale: ws.locale, graph: graphPath(ws), home: ws.labels.home, done: ws.labels.done })
+  const names = { locale: ws.locale, graph: graphPath(ws), home: ws.labels.home, done: ws.labels.done }
+  // Automatic sync adds one rule, and only a workspace that turned it on is asked to carry it.
+  const rendered = ws.sync?.auto === true ? `${renderTemplate("AGENTS.md", names)}\n\n${renderTemplate("sync-rule.md", names)}` : renderTemplate("AGENTS.md", names)
   const items = []
   let current = null
   for (const line of rendered.split("\n")) {

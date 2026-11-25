@@ -41,3 +41,4 @@ export { adoptSkill, dismissCandidate, learnedSettings, lintSkills, mistakeCases
 
 export { agentCatalogs, agentRecommendations, agentsStatus, agentSuggestions, agentArgs, setAgent, decideAgentSuggestion, validateAgents, editAgentsConfig, CLAUDE_MODELS } from "./agents.mjs"
 export { COMMAND_STEPS, START_STEPS, startReport, startStatus } from "./start.mjs"
+export { addSyncRule, autoPush, setupSync, syncOf, syncRun, syncStatus, SYNC_KEYS } from "./sync.mjs"

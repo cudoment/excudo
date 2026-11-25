@@ -1,6 +1,6 @@
 ---
 name: excudo-setup
-description: Set up an Excudo memo from nothing, install its engine, open it in Tine, sync it to a phone, put it on a website and let task states be changed there, hand Home over to the owner or arrange its layout, connect an outside source, keep knowledge of a repository or page, let agents learn from the owner's requests, update the engine, prepare a problem report, or change settings. Use for "update the engine", "report a problem", "엔진 업데이트해 줘", "문제 제보해 줘", "choose my worker and reviewers", "작업자와 검토자 정해 줘", "set up my memo", "where do I start", "let me see my memo on my phone", "set up the website", "let me change task states on the website", "watch this repository", "let me write my Home", "arrange my Home", "let agents learn from my requests", "메모를 새로 만들어 줘", "어디서부터 시작해", "휴대폰에서도 보고 싶어", "사이트 설정해 줘", "사이트에서 할 일 상태를 바꾸게 해 줘", "홈 구성 바꿔 줘", "내 요청에서 배우게 해 줘", "외부 할 일 가져와 줘", or "메모 설정 바꿔 줘".
+description: Set up an Excudo memo from nothing, install its engine, open it in Tine, sync it to a phone, keep it in step across computers (GitHub or Google Drive), put it on a website and let task states be changed there, hand Home over to the owner or arrange its layout, connect an outside source, keep knowledge of a repository or page, let agents learn from the owner's requests, update the engine, prepare a problem report, or change settings. Use for "update the engine", "report a problem", "엔진 업데이트해 줘", "문제 제보해 줘", "choose my worker and reviewers", "작업자와 검토자 정해 줘", "set up my memo", "where do I start", "let me see my memo on my phone", "sync my memo across my computers", "set up the website", "let me change task states on the website", "watch this repository", "let me write my Home", "arrange my Home", "let agents learn from my requests", "메모를 새로 만들어 줘", "어디서부터 시작해", "휴대폰에서도 보고 싶어", "여러 컴퓨터에서 메모를 맞춰 줘", "사이트 설정해 줘", "사이트에서 할 일 상태를 바꾸게 해 줘", "홈 구성 바꿔 줘", "내 요청에서 배우게 해 줘", "외부 할 일 가져와 줘", or "메모 설정 바꿔 줘".
 ---
 
 # Set up an Excudo memo
@@ -15,7 +15,7 @@ Run `excudo start` for its next command and take the steps below in order.
 Run the report again after each step to confirm progress.
 
 Node.js, the workspace, its engine, Git and the skills come first.
-Worker roles, Tine, phone sync, Home, outside work and the website are optional.
+Worker roles, Tine, phone sync, several computers, Home, outside work and the website are optional.
 Orca and a website host are optional too; any terminal and Markdown editor can open the memo.
 
 ## Updates and problem reports
@@ -84,7 +84,7 @@ Follow the first incomplete step from the report.
 2. For a new workspace, ask its location and language (`en` or `ko`) if unknown. Install once:
 
    ```sh
-   npx -y excudo@^0.8.0 init <folder> --locale <en|ko>
+   npx -y excudo@^0.9.0 init <folder> --locale <en|ko>
    ```
 
    If `EXCUDO_PACKAGE` is set, use its local folder or tarball instead:
@@ -241,6 +241,31 @@ Follow the first incomplete step from the report.
 List skill names in `keep` when scheduled steps depend on them.
 Upkeep keeps a failing listed skill installed, reports its failing checks and exits 1.
 The caller can notify the owner to fix the checks.
+
+12. To keep the workspace in step across the owner's computers (the "Use it on several computers" step of
+    `excudo start`; README: Use it on several computers), ask which method fits and whether the owner
+    is used to git. Sync only brings the git history to each computer; it needs the workspace to be a
+    git repository with a commit.
+    - **GitHub**: a private repository is the remote. Best when the owner has a GitHub account or other
+      people's tools already read it. Run `npx --no-install excudo sync setup github --create <owner/repo>`
+      (it makes the repository private through `gh`; without `--create` it needs an existing remote,
+      `--remote <name>` picks one). If `gh` is missing or logged out, the command prints what the owner runs
+      (`brew install gh`, `gh auth login --web`); never enter or store a credential.
+    - **Google Drive**: each computer writes its own git bundle into a folder the Google Drive desktop app
+      syncs, and merges the bundles the others wrote; `.git` never goes into Drive. Best when the owner
+      has no GitHub account. Run `npx --no-install excudo sync setup drive --folder <path>`, the path
+      being a folder inside the synced Drive folder (`~/…` works); `--machine <name>` names this computer.
+    Offer `--auto` to an owner who is not used to git, and say what it does before turning it on: every
+    `excudo save` also pushes, and the agent runs `excudo sync --pull` at the start of every request
+    (setup adds that rule to `AGENTS.md`), so the owner never runs git. Without `--auto` the owner or the
+    agent runs `excudo save` and then `excudo sync` when they choose.
+    Then `excudo save "Set up sync"` and `excudo sync`. A conflict aborts the merge and names the files:
+    resolve it with plain git together with the owner and never keep only one side unread; sync never forces.
+    For the second computer: with GitHub, `git clone <url> <folder>`, `cd <folder>`, `npm install`, then `npx --no-install excudo sync --pull` before any build or save (it marks the clone as new, so its first build takes the history's generated text); with Drive,
+    `npx -y excudo init <folder> --locale <en|ko> [--graph <folder>]` (the memo's own language and graph folder; setup stops when they differ), `cd <folder>`, `git init`, `npm install`, then
+    `npx --no-install excudo sync setup drive --folder <path> --id <id>` (`excudo sync --status` on the first
+    computer shows the id; the id is also the folder's name in Drive) and `npx --no-install excudo sync --pull`.
+    Install the schedule on one computer only. Phone sync with Syncthing stays separate.
 
 Optionally choose a worker and independent reviewers with the owner.
 Run `npx --no-install excudo agents --json`.

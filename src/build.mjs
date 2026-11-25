@@ -33,7 +33,8 @@ import { writeExports } from "./exports.mjs"
 import { siteOf, writeSite } from "./site.mjs"
 import { existingPath, writeAtomic } from "./files.mjs"
 import { format } from "./labels.mjs"
-import { heldFiles, heldPath } from "./git.mjs"
+import { graphFileAt, heldFiles, heldPath, incomingGraphFiles, inRepository } from "./git.mjs"
+import { readState as readSyncState, writeState as writeSyncState } from "./syncstate.mjs"
 import { ROOT, collect, makeTree, nodesSpec, pageOf } from "./tree.mjs"
 
 const sha = (text) => createHash("sha256").update(text).digest("hex")
@@ -107,17 +108,45 @@ export function renderTree(ws, { node, path } = {}) {
   return model.outline(start, order).filter((ln) => !COLLAPSED.test(ln)).join("\n")
 }
 
+/** Whether a view shows what only one computer knows: an `activity` or `status` fence reads that computer's own records. */
+function readsLocalRecords(node) {
+  if (node?.type === "code" && (node.lang === "activity" || node.lang === "status")) return true
+  return (node?.children ?? []).some(readsLocalRecords)
+}
+
+/** Whether the working copy of a generated view page (as a merge or the first build after a clone brought it) is the engine's output. */
+function acceptsPage(ws, accepted, doc, file, current) {
+  const name = file.normalize("NFC")
+  if (!accepted?.files.has(name)) return false
+  if (accepted.whole) return true
+  if (!readsLocalRecords(doc.tree)) return false
+  const was = graphFileAt(ws, accepted.before, file)
+  return was === undefined || sha(withoutCollapse(was)) !== sha(withoutCollapse(current))
+}
+
 /**
  * Builds the generated parts. Returns what changed; `blocked` lists files that
  * were edited by hand and left alone. With `force` they are overwritten.
  * `prepared` reuses a collection made since the graph last changed, as `save` does after `check`.
  */
-export function build(ws, { force = false, prepared } = {}) {
+export function build(ws, { force = false, prepared, accepted } = {}) {
   const { library, references, model } = prepared ?? prepare(ws)
   const errors = references.issues.filter((issue) => issue.severity === "error")
   if (errors.length) return { references, errors, written: [], blocked: [], repaired: [] }
 
-  const state = readBuildState(ws) ?? {}
+  const recorded = readBuildState(ws)
+  const state = recorded ?? {}
+  // A workspace that syncs across computers receives generated pages another computer's build wrote. Two cases are the
+  // engine's own output and not a hand edit, and nothing else is:
+  //  - a computer that has not built the history it holds yet (right after a clone or a takeover; sync marks it `fresh` and
+  //    there is no build record) takes every generated page and region the history holds as it is;
+  //  - after a merge (`accepted`: the files it changed and the commit before it), only a view that shows what one computer knows
+  //    (an `activity` or `status` fence) and whose generated text the merge itself changed. A node's region shows the shared tree,
+  //    so another computer's change to it, or a record lost with the build record, stays protected like any hand edit.
+  const fresh = Boolean(ws.sync && typeof ws.sync === "object" && !recorded && inRepository(ws.root) && readSyncState(ws).fresh)
+  if (fresh) {
+    try { accepted = { files: incomingGraphFiles(ws, null), before: null, whole: true } } catch { accepted = undefined }
+  }
   state.pages ??= {}
   state.regions ??= {}
   state.pageBaselines ??= {}
@@ -167,6 +196,7 @@ export function build(ws, { force = false, prepared } = {}) {
     const region = current ? applyCollapse(generated, collapseState(current)) : generated
     const expected = state.regions[key]
     const currentHash = sha(withoutCollapse(current))
+    if (current && accepted?.whole && accepted.files.has(doc.sourcePath.normalize("NFC"))) remember(state.regionBaselines, key, currentHash)
     const matchesOutput = currentHash === sha(withoutCollapse(region))
     if (!force && !matchesOutput && (current || expected) && !state.regionBaselines[key]?.includes(currentHash)) {
       const code = straightened ? "region-mangled" : expected ? "region-edited" : "protection-missing"
@@ -194,6 +224,7 @@ export function build(ws, { force = false, prepared } = {}) {
     const current = existsSync(target) ? readFileSync(target, "utf8") : undefined
     const fresh = renderView(ws, { library, model }, doc)
     const owned = current?.split("\n")[0].normalize("NFC") === `${ws.labels.generated}:: views/${name}.mdx`.normalize("NFC")
+    if (owned && acceptsPage(ws, accepted, doc, `${name}.md`, current)) remember(state.pageBaselines, name, sha(withoutCollapse(current)))
     if (current !== undefined && !force && (!owned ||
       sha(withoutCollapse(current)) !== sha(withoutCollapse(fresh)) &&
       !state.pageBaselines[name]?.includes(sha(withoutCollapse(current))))) {
@@ -208,6 +239,7 @@ export function build(ws, { force = false, prepared } = {}) {
   }
 
   writeBuildState(ws, state)
+  if (fresh) { try { writeSyncState(ws, { fresh: false }) } catch {} }
   // The files written from the memo follow it. One that cannot be written leaves the build done.
   let exports = [], exportError
   try { exports = writeExports(ws, { model }) } catch (error) { exportError = error.message }

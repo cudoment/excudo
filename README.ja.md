@@ -13,7 +13,7 @@ Excudo(パッケージ名 `excudo`)は、パーソナライズしたAI環境を�
 メモを作成し、エンジンをインストールして、次のステップを確認します。
 
 ```sh
-npx -y excudo@^0.8.0 init my-memo
+npx -y excudo@^0.9.0 init my-memo
 cd my-memo
 npm install
 git init
@@ -45,7 +45,7 @@ npx --no-install excudo site --open
 1. Node.jsが22.16以上であることを確認します(`node --version`)。満たさない場合は中止し、https://nodejs.org を案内します。
 2. 尋ねるのはフォルダー名だけで、一度だけにします。ファイルとメモの言語には `en` を使います(`--locale en`)。所有者が韓国語を読む場合に限り `ko` を使います。ファイルの言語に関係なく、所有者とは所有者の言語(日本語、またはほかの言語)で会話を続けます。
 3. グローバルにはインストールしません。`npm install -g` は使わず、npm自身のキャッシュを除いて、新しいフォルダーの外は変更しません。
-4. `npx -y excudo@^0.8.0 init <folder> --locale en` を実行し、続けて次の1行を実行します: `cd <folder> && npm install && git init && npx --no-install excudo start --report --json`。`init` のあとのコマンドはすべて `<folder>` の中で実行します。`init` はgitを実行しないため、`git init` も手順に含まれています。
+4. `npx -y excudo@^0.9.0 init <folder> --locale en` を実行し、続けて次の1行を実行します: `cd <folder> && npm install && git init && npx --no-install excudo start --report --json`。`init` のあとのコマンドはすべて `<folder>` の中で実行します。`init` はgitを実行しないため、`git init` も手順に含まれています。
 5. 報告(`--report --json`)を読んで確認します。ステップ `workspace`、`install`、`git`、`skills` がすべて `done` なら、インストールは成功です。`done` でないステップがあれば、その `id` と `state` を示し、どうするかを所有者に尋ねます。原因を推測したり、ほかのコマンドを実行したりしません。
 6. コマンドが失敗したら中止し、エラー出力の最後の数行を示して所有者に尋ねます。自分で修正したり、別のコマンドを試したりしません。
 7. 最後に、残っている次のステップ、つまり `stoppedAt` が指すステップを所有者に引き渡します。その `run`、`ask`、`setting` をそのまま伝え、自分では実行しません。

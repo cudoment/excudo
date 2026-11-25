@@ -23,7 +23,7 @@ async function gather(ws, options) {
   const { engine } = kit
   // learnedSettings checks skill options too, including the names the owner keeps in skills.keep.
   const settings = []
-  for (const read of [() => engine.sourcesOf(ws), () => engine.learnedSettings(ws), () => engine.instructionsSize(ws)]) try { read() } catch (error) { settings.push(error.message) }
+  for (const read of [() => engine.sourcesOf(ws), () => engine.learnedSettings(ws), () => engine.instructionsSize(ws), () => engine.syncOf(ws)]) try { read() } catch (error) { settings.push(error.message) }
   settings.push(...engine.validateAgents(ws))
   let executable = false
   try { accessSync(join(ws.root, "node_modules", ".bin", "excudo"), constants.X_OK); executable = true } catch {}
@@ -47,7 +47,38 @@ async function gather(ws, options) {
     home: { owned: home.owned, copies: issues.filter((issue) => issue.code === "home-copy").map((issue) => `${issue.file}:${issue.line}`),
       broken: (home.embedded ?? []).filter((item) => !item.exists).map((item) => item.page) },
     site: siteFacts(ws),
+    sync: syncFacts(ws, inGit),
   }
+}
+
+// Sync, when the workspace sets it: its place exists on this computer and the machine-local state stays
+// out of git. A workspace without the setting has no sync fact and sees no sync check.
+function syncFacts(ws, inGit) {
+  try {
+    const status = kit.engine.syncStatus(ws)
+    // `sync: false` or `null` is off, as everywhere else; only a setting that cannot be used is a problem.
+    if (!status.configured) return { configured: false }
+    if (!status.valid) return { configured: true, method: null }
+    const facts = { configured: true, method: status.method, git: inGit, auto: status.auto }
+    if (status.method === "github") facts.remote = inGit && spawnSync("git", ["-C", ws.root, "remote", "get-url", status.remote], { encoding: "utf8" }).status === 0
+    else facts.folder = status.folderExists === true
+    facts.stateIgnored = inGit ? spawnSync("git", ["-C", ws.root, "check-ignore", "-q", join(ws.cacheDir, "sync.json")]).status === 0 : null
+    return facts
+  } catch (error) { return { configured: true, method: null } }
+}
+
+function syncCheck(sync) {
+  const problems = []
+  if (sync.method === null) problems.push({ en: "the sync setting is not usable (see the settings check)", ko: "sync 설정을 쓸 수 없습니다(설정 검사 참조)" })
+  else {
+    if (sync.git === false) problems.push({ en: "the workspace is not a git repository: run git init and excudo save first", ko: "작업 공간이 git 저장소가 아닙니다. 먼저 git init과 excudo save를 실행할 것" })
+    if (sync.method === "github" && sync.remote === false) problems.push({ en: "the git remote is missing: run excudo sync setup github --create <owner/repo>", ko: "git 리모트가 없습니다. excudo sync setup github --create <owner/repo>를 실행할 것" })
+    if (sync.method === "drive" && sync.folder === false) problems.push({ en: "the Drive folder does not exist on this computer: check that the Google Drive app runs and syncs it", ko: "이 컴퓨터에 Drive 폴더가 없습니다. Google Drive 앱이 실행 중이며 그 폴더를 동기화하는지 확인할 것" })
+    if (sync.stateIgnored === false) problems.push({ en: ".gitignore must list .excudo/: this computer's name and sync state stay out of git", ko: ".gitignore에 .excudo/를 적을 것. 이 컴퓨터의 이름과 동기화 상태는 git에 넣지 않습니다" })
+  }
+  return { id: "sync", ok: !problems.length,
+    message: problems.length ? { en: `Sync: ${problems.map((item) => item.en).join("; ")}.`, ko: `동기화: ${problems.map((item) => item.ko).join("; ")}.` }
+      : { en: `Sync through ${sync.method} is ready on this computer${sync.auto ? " (automatic: save pushes, agents pull first)" : ""}.`, ko: `${sync.method}를 통한 동기화를 이 컴퓨터에서 쓸 수 있습니다${sync.auto ? "(자동: 저장하면 올리고, 에이전트가 먼저 받음)" : ""}.` } }
 }
 
 // The website, when the workspace keeps one: whether it has been written since the setting was made.
@@ -99,6 +130,7 @@ function evaluate(facts, options = {}) {
     homeCheck(facts.home ?? { owned: false, copies: [], broken: [] }),
     siteCheck(facts.site ?? { configured: false }),
   ]
+  if (facts.sync?.configured) checks.push(syncCheck(facts.sync))
   if (options.feedback || facts.feedback) checks.push(feedbackCheck(facts.feedback, options))
   if (facts.update) checks.push(updateCheck(facts.update))
   return checks

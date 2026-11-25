@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.9.0
+
+### Fix
+
+- Give graphNow's file paths in NFC like graphAt, and let a queue report reach a page spelled otherwise on disk
+
+### Release
+
+- Give the release check's test run twenty minutes and say when it times out
+- Write the 0.9.0 notes
+- Raise the install ranges to 0.9.0
+
+### Sync
+
+- Accept only machine-dependent generated text after a merge, fail joins and unrelated-only pulls precisely, and read the command from its first argument
+- Accept merged generated pages, fail joins that take nothing, and keep other commands strict
+- Make the clone and Drive join flows work from what init and save make
+- Fix the review findings on branches, machine names, folders, held files and pushes
+- Keep a workspace in step across computers through GitHub or Google Drive
+
+### Test
+
+- Run test files in parallel again, cutting a full run from about 4m45s to about 75s
+
 ## 0.8.0
 
 ### CLI

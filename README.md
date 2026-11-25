@@ -15,7 +15,7 @@ skills and automation, where work, learning and creative results get made.
 Create a memo, install its engine and see the next step.
 
 ```sh
-npx -y excudo@^0.8.0 init my-memo
+npx -y excudo@^0.9.0 init my-memo
 cd my-memo
 npm install
 git init
@@ -47,7 +47,7 @@ The agent follows these rules and runs only the commands of rule 4 and the repor
 1. Check that Node.js is 22.16 or later (`node --version`); if not, stop and point to https://nodejs.org.
 2. Ask the folder name and the language of the files (`en` or `ko`) once, then use them without asking again. Choose `en` unless the owner reads Korean (`ko`). Whatever the file language is, keep talking to the owner in the owner's own language (Japanese, Chinese or any other).
 3. Never install anything globally: no `npm install -g`, and no change outside the new folder apart from npm's own cache.
-4. Run `npx -y excudo@^0.8.0 init <folder> --locale <language>`, then this one line: `cd <folder> && npm install && git init && npx --no-install excudo start --report --json`. Every command after `init` runs inside `<folder>`; `init` does not run git, so `git init` is part of the sequence.
+4. Run `npx -y excudo@^0.9.0 init <folder> --locale <language>`, then this one line: `cd <folder> && npm install && git init && npx --no-install excudo start --report --json`. Every command after `init` runs inside `<folder>`; `init` does not run git, so `git init` is part of the sequence.
 5. Read the report (`--report --json`) to verify. The install succeeded when the steps `workspace`, `install`, `git` and `skills` are all `done`. For each of them that is not, show its `id` and `state` and ask the owner what to do; do not guess a cause or run anything else.
 6. When a command fails, stop, show the last lines of its error output and ask the owner; never improvise a fix or another command.
 7. Finish by handing the owner the next remaining step, the one named by `stoppedAt`: relay its `run`, `ask` and `setting` verbatim and do not run it yourself.
@@ -76,6 +76,7 @@ The engine generates the list below.
 6. **Outside work**: bring in an issue tracker or team board through your logged-in browser; `npx --no-install excudo sources`; or ask your agent “pull my issues into my memo”
 7. **The memo as a website**: publish it on Vercel where only your login opens it, on a computer or a phone; `npx --no-install excudo site setup`; or ask your agent “set up the website”
 8. **Task states from the website**: bring website task states into the memo; `site: { inbox: true }`; `npx --no-install excudo site setup`; or ask your agent “let me change task states on the website”
+9. **Use it on several computers**: keep the workspace in step across computers through GitHub or Google Drive; or ask your agent “sync my memo across my computers”
 
 Run `npx -y excudo start` (`npx --no-install excudo start` in a workspace) to see progress. Use `excudo start --report` for every step and where to continue.
 <!-- /excudo:start -->
@@ -223,7 +224,7 @@ copying them, so they change with the clone: `skills --link --force` (`skills --
 After the npm package is published:
 
 ```sh
-npx -y excudo@^0.8.0 init my-memo --locale en
+npx -y excudo@^0.9.0 init my-memo --locale en
 cd my-memo
 npm install
 git init
@@ -1274,6 +1275,9 @@ workspace, `start`, `feedback` and `update` (without `--apply`) still run; every
 | `site open` | Open the published website, copy its address and print a code for a phone |
 | `site status [--json]` | Show the login, the project, the protection, the address, the last publishing and the inbox |
 | `site pull [--now] [--dry-run] [--json]` | Bring in the task states chosen on the website: every five minutes, at once when a page asks or with `--now`; commit the pages, close the issues, publish again |
+| `sync [--pull] [--push] [--status] [--json]` | Keep the workspace in step across computers through the `sync` setting: pull, then push (`--pull` or `--push` for one of them). `--status` shows the method, remote or folder, last sync, ahead and behind and the other computers seen, without the network. Refuses to pull with uncommitted tracked files (`save` first, or `auto` saves), aborts a conflicting merge and names the files, never rebases or forces. Without the setting it says so: exit 0 for `--status`, else 1 |
+| `sync setup github [--remote <name>] [--create <owner/repo>] [--auto]` | Write `sync: { github }` with a workspace id; `--create` makes a private repository with `gh` and adds the remote; `--auto` also adds the pull-first rule to `AGENTS.md` |
+| `sync setup drive --folder <path> [--machine <name>] [--id <id> \| --new] [--auto]` | Write `sync: { drive }`; `--id` joins the memo another computer made (a fresh `init` folder takes over its history on the first pull); `--new` starts another memo in a folder that already holds one |
 | `receive --input <file\|-> [--dry-run] [--json]` | Bring in the task states chosen on the website: a batch, a list of batches, or issues as `gh issue list --json number,body` prints them; a change it cannot place becomes a waiting task on today's journal, and an issue without a batch is passed over |
 | `skills [--global] [--force] [--replace <name>\|--replace-all] [--link\|--copy]` | Install or refresh skills and record the engine version; `--link` links them to the installed engine |
 | `skills lint [name\|dir]... [--json]` | Check skills against the skill rule and score them; without a workspace, the engine's skills |
@@ -1454,6 +1458,7 @@ export default {
   agents: undefined, // optional worker and independent reviewer preferences
   queue: {},          // tasks handed to agents: { tag, limit }; see "Hand work to agents"
   site: undefined,    // the memo as a website: { out, title, mode, open, journals, css, onSave, inbox, publish }; see "See the memo as a website" (inbox: true, or { github: { repo }, schedule })
+  sync: undefined,    // keep the workspace in step across computers: { github: { remote, branch } } or { drive: { folder } }, plus { id, auto }; written by sync setup, see "Use it on several computers"
   labels: {},         // override generated words
 }
 ```
@@ -1485,9 +1490,60 @@ and connect it on Android with Syncthing-Fork. Open the synced folder in Tine. `
 views, outliner backups and the engine's temporary files on the computer. Capture urgent notes in journals; distill files them
 into nodes. Keep the workspace's engine, skills, caches and review decisions outside phone sync.
 
+## Use it on several computers
+
+Keep one workspace in step on several computers through git. Pick a private GitHub repository or a Google Drive folder. Ask your agent, “sync my memo across my computers”, or run the commands below. A workspace that does not set `sync` runs no sync code: no check, no warning, no network. `excudo start` only lists one more optional step, "Use it on several computers", as unknown.
+
+**Pick a method.**
+
+- **GitHub**: a private repository is the remote. Pick it when you have a GitHub account. It is the simplest and the fastest, and the repository keeps the full history.
+- **Google Drive**: every computer writes its own git bundle into a folder the Google Drive desktop app syncs, and merges the bundles the others wrote. Pick it when you have no GitHub account. The `.git` folder never goes into Drive, because a sync app copying a live repository file by file corrupts it. A bundle is one file written in one step, and each computer writes only its own.
+
+**Set it up on the first computer.** The workspace needs a git repository with a commit (`git init`, then `excudo save`).
+
+```sh
+# GitHub: makes a private repository with gh and adds it as the remote
+npx --no-install excudo sync setup github --create <owner/repo>
+# Google Drive: a folder inside the folder the Drive app syncs
+npx --no-install excudo sync setup drive --folder "~/Google Drive/My Drive/excudo"
+npx --no-install excudo save "Set up sync"
+npx --no-install excudo sync
+```
+
+The setup writes the `sync` setting once, with a workspace id (so two workspaces can share one Drive folder, under `<folder>/<id>/`). If `gh` is missing or logged out, the command prints what you run (`brew install gh`, `gh auth login --web`) and stops; Excudo never enters or stores a credential. Without `--create`, `sync setup github` uses a remote you added (`--remote <name>`, default `origin`).
+
+**Set it up on the second computer.**
+
+- GitHub: `git clone <url> my-memo`, `cd my-memo`, `npm install`. The settings come with the clone. Run `npx --no-install excudo sync --pull` before the first build or save, so the clone is marked as new, then check with `npx --no-install excudo sync --status`.
+- Google Drive: make an empty workspace and join the memo by its id. `excudo sync --status` on the first computer shows the id, which is also the name of the folder inside your Drive folder.
+
+  ```sh
+  npx -y excudo init my-memo --locale <en or ko, as on the first computer> && cd my-memo && git init && npm install
+  npx --no-install excudo sync setup drive --folder "<this computer's Drive folder>" --id <id>
+  npx --no-install excudo sync --pull
+  ```
+
+  The setup reads the memo's language and graph folder from its bundle and stops when this folder was made differently (pass the same `--locale` and `--graph` to `init`). The first pull takes over the other computer's history and does not rebuild. Everything in the graph folder that `init` wrote, and every other file the history also has, moves to `.excudo/sync-before/`, so nothing is lost. The setup stops while the folder holds no readable bundle of that memo (a wrong id, or Drive has not finished syncing): wait and run it again. Do not run `excudo save` before the first pull, or the folder makes a history of its own that never joins the memo; a joining folder whose pull takes nothing over fails and says so, while a first computer that has no commit yet is told to run `excudo save`. On a computer with history, a bundle on another branch is skipped with a warning, and so is a bundle of another memo as long as one related bundle exists; when every bundle found is another memo's, the sync fails before it pushes.
+
+**Use it.**
+
+- `excudo sync` pulls, then pushes. `--pull` only brings changes in, `--push` only sends, `--status` shows the method, the remote or folder, the last sync, ahead and behind, and the other computers seen (no network), and `--json` works on all of them.
+- Pull stops while a tracked file has uncommitted changes: run `excudo save "<message>"` first. Merges are fast-forwards or plain merges. Nothing is rebased or forced.
+- After a clean merge the engine runs the build that `save` runs and commits what it wrote, so generated regions match. Two kinds of generated text count as the other computer's engine output and not as hand edits: a view that shows one computer's records (an `activity` or `status` fence) whose text the merge itself changed, and, on a computer that has not built yet (a fresh clone or a takeover; the first `sync` marks it), the history's generated pages and regions as they are. Every other incoming change to a generated region or page, a deleted `.excudo/build.json` outside a fresh clone included, stays protected like a hand edit: the build stops and names the file.
+- A merge conflict aborts the merge, leaves the folder as it was, exits 1 and names the files. Resolve it with plain git, or ask your agent, and read both sides; never auto-resolve.
+- Drive skips a bundle that is not whole (Drive may still be syncing it) or whose name this engine did not write (a Drive conflict copy such as `name (1).bundle`), and says so. Run `excudo sync` again a moment later.
+- The Drive folder and the workspace must not contain one another, and the workspace must stay out of Google Drive: setup refuses the first and warns about the second.
+- Each computer's name for its bundle comes from its hostname and lives in `.excudo/sync.json`, which git ignores. Set it with `--machine <name>` at setup. A name whose bundle this computer never wrote is refused, even when you choose it, so one computer never overwrites another. If the branch names differ (`master` against `main`), a new computer takes the memo's branch on its first pull; two computers that both have history on different branches fail with both names.
+
+**Automatic sync for an owner new to git.** Add `--auto` to the setup (or `auto: true`). Then `excudo save` also pushes after its commit, and also when it commits nothing but an earlier offline commit is still unsent (a failed push is a warning and the commit stays, so scheduled runs push too), and `sync` saves your changes before it pulls. Setup adds a rule to `AGENTS.md`, which the setup check asks for only in a workspace with `auto: true`: at the start of every request the agent runs `npx --no-install excudo sync --pull` before reading or changing the memo, and it finishes with `excudo save`. You never run git yourself. Only `sync` and `save` with `auto` pull or push.
+
+**What is synced.** The git history: the graph, the records `save` commits and `excudo.config.mjs`. `save` commits only those, so `sync setup` and the first push also commit what `init` wrote beside them and git does not track yet, and show the list: `package.json`, `package-lock.json`, `.gitignore`, `AGENTS.md`, `CLAUDE.md` and the skills folders. A clone needs them to run `npm install`. Ignored files and your other untracked files are never added. **What is not.** `node_modules/` and `.excudo/` (the caches, the requests read from agent logs, the machine-local state): each computer installs with `npm install`, and each reads its own agent logs.
+
+Run the schedule on one computer only; two schedules would write the same pages at once. Phone sync with Syncthing is separate: it shares the graph folder, not git (see "Tine and phone sync"). The check named `sync-conflict` is about copies a sync app such as Syncthing leaves, not about this command.
+
 ## Develop
 
-Test files run sequentially so CLI timeout checks stay reproducible.
+Test files run in parallel (about 75 seconds on 14 cores); every test uses its own temporary folders and stand-ins for GitHub, Vercel and npm, so none needs the network.
 
 ```sh
 npm install

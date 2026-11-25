@@ -55,6 +55,8 @@ export const DEFAULTS = {
   agents: undefined,
   /** The memo as a website, written outside the graph: { out, title, mode, open, journals, css, id, onSave, inbox } (see site.mjs). */
   site: undefined,
+  /** Keep the workspace in step across computers: { github: { remote, branch } } or { drive: { folder } }, with { id, auto }; undefined is off (see sync.mjs). */
+  sync: undefined,
 }
 
 /** The nearest folder at or above `from` that has excudo.config.mjs. */

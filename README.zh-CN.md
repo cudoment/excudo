@@ -13,7 +13,7 @@ Excudo(软件包名 `excudo`)是一个引擎，用来管理个性化的AI环境�
 创建备忘录，安装引擎，然后查看下一步。
 
 ```sh
-npx -y excudo@^0.8.0 init my-memo
+npx -y excudo@^0.9.0 init my-memo
 cd my-memo
 npm install
 git init
@@ -45,7 +45,7 @@ npx --no-install excudo site --open
 1. 确认Node.js是22.16或更高版本(`node --version`)。否则停止，并指向 https://nodejs.org。
 2. 只问文件夹名称，而且只问一次。文件和备忘录的语言使用 `en`(`--locale en`);只有主人能读韩文时才用 `ko`。无论文件用什么语言，都继续用主人的语言(中文或其他语言)与主人交谈。
 3. 不做全局安装：不用 `npm install -g`，除npm自身的缓存外，不改动新文件夹以外的任何内容。
-4. 运行 `npx -y excudo@^0.8.0 init <folder> --locale en`，然后运行这一行：`cd <folder> && npm install && git init && npx --no-install excudo start --report --json`。`init` 之后的每条命令都在 `<folder>` 内运行。`init` 不会运行git，所以 `git init` 也是流程的一部分。
+4. 运行 `npx -y excudo@^0.9.0 init <folder> --locale en`，然后运行这一行：`cd <folder> && npm install && git init && npx --no-install excudo start --report --json`。`init` 之后的每条命令都在 `<folder>` 内运行。`init` 不会运行git，所以 `git init` 也是流程的一部分。
 5. 读取报告(`--report --json`)来验证。当步骤 `workspace`、`install`、`git` 和 `skills` 全部是 `done` 时，安装成功。对于不是 `done` 的步骤，展示它的 `id` 和 `state`，并询问主人怎么办；不要猜测原因，也不要运行其他命令。
 6. 命令失败时停止，展示错误输出的最后几行并询问主人；不要自行修复，也不要尝试其他命令。
 7. 最后把剩下的下一步交给主人，也就是 `stoppedAt` 指向的那一步：原样转达它的 `run`、`ask` 和 `setting`，不要自己运行。

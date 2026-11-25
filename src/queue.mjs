@@ -15,7 +15,7 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 import { prepare } from "./build.mjs"
 import { walkGraph } from "./check.mjs"
 import { authoredText, blocksOf, DECISION, taskLines } from "./dialects/logseq.mjs"
-import { writeAtomic } from "./files.mjs"
+import { existingPath, writeAtomic } from "./files.mjs"
 import { heldPath } from "./git.mjs"
 import { format, LOCALES } from "./labels.mjs"
 import { privateLine } from "./notes.mjs"
@@ -126,7 +126,8 @@ export function queueReport(ws, key, { summary, file, stamp } = {}) {
   // The report stays outside the memo; the line in it must not carry what looks private.
   if (privateLine(words)) throw new Error(m["queue-private"])
   const short = [...words].length > SUMMARY ? `${[...words].slice(0, SUMMARY - 1).join("").trimEnd()}…` : words
-  const path = join(ws.graphDir, item.file)
+  // `item.file` is NFC; the page may be spelled otherwise on a file system that keeps the form it was written in.
+  const path = existingPath(join(ws.graphDir, item.file))
   // A page someone else is changing (held by a scheduled run) takes no report now; the next run writes it.
   if (heldPath(ws, path)) throw new Error(format(m["queue-held"], { key, file: item.file }))
   const lines = readFileSync(path, "utf8").split("\n")

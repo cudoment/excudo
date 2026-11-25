@@ -1822,5 +1822,301 @@
         ]
       }
     }
+  },
+  {
+    "name": "sync not set up adds no sync check",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": false
+      }
+    }
+  },
+  {
+    "name": "sync through GitHub ready",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": true,
+        "method": "github",
+        "git": true,
+        "auto": false,
+        "remote": true,
+        "stateIgnored": true
+      }
+    }
+  },
+  {
+    "name": "automatic sync with its AGENTS.md rule missing",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [
+        "Pull before every request, and save when it ends."
+      ],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": true,
+        "method": "github",
+        "git": true,
+        "auto": true,
+        "remote": true,
+        "stateIgnored": true
+      }
+    }
+  },
+  {
+    "name": "automatic sync with its AGENTS.md rule in other words",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "rulesDiffer": [
+        "Pull before every request, and save when it ends."
+      ],
+      "sync": {
+        "configured": true,
+        "method": "github",
+        "git": true,
+        "auto": true,
+        "remote": true,
+        "stateIgnored": true
+      }
+    }
+  },
+  {
+    "name": "sync through GitHub without the git remote",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": true,
+        "method": "github",
+        "git": true,
+        "auto": false,
+        "remote": false,
+        "stateIgnored": true
+      }
+    }
+  },
+  {
+    "name": "sync through Drive with the folder missing on this computer",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": true,
+        "method": "drive",
+        "git": true,
+        "auto": false,
+        "folder": false,
+        "stateIgnored": true
+      }
+    }
+  },
+  {
+    "name": "sync whose machine-local state is not ignored by git",
+    "expect": "fail",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": true,
+        "method": "drive",
+        "git": true,
+        "auto": false,
+        "folder": true,
+        "stateIgnored": false
+      }
+    }
+  },
+  {
+    "name": "sync through Drive ready with automatic sync and its rule",
+    "expect": "pass",
+    "facts": {
+      "settings": [],
+      "graph": true,
+      "engine": true,
+      "skills": [
+        {
+          "name": "excudo-capture",
+          "agents": true,
+          "claude": true
+        }
+      ],
+      "outdated": [],
+      "git": true,
+      "ignored": {
+        "cache": true,
+        "modules": true
+      },
+      "rulesMissing": [],
+      "errors": [],
+      "home": {
+        "owned": true,
+        "copies": [],
+        "broken": []
+      },
+      "sync": {
+        "configured": true,
+        "method": "drive",
+        "git": true,
+        "auto": true,
+        "folder": true,
+        "stateIgnored": true
+      }
+    }
   }
 ]

@@ -17,6 +17,7 @@ import { publishState } from "./publish.mjs"
 import { pullScheduleState } from "./schedule.mjs"
 import { siteIdOf } from "./site-runtime.mjs"
 import { siteOf } from "./site.mjs"
+import { syncOf } from "./sync.mjs"
 
 /** The Node.js the engine needs. */
 export const NODE_NEEDED = "22.16.0"
@@ -67,6 +68,12 @@ export const START_STEPS = [
   { id: "site", required: false, run: "npx --no-install excudo site setup", done: (ws) => ws.hasConfig && safely(() => publishState(ws).url) },
   { id: "inbox", required: false, needs: "site", run: "npx --no-install excudo site setup", setting: "site: { inbox: true }", set: (ws) => ws.hasConfig && safely(() => siteOf(ws)?.inbox),
     done: (ws) => ws.hasConfig && safely(() => inboxReady(ws)) },
+  // Optional and never "next": a workspace that does not set sync stays as it was (done is unknown, like Tine), and the settings are written by `sync setup`, not by hand.
+  { id: "sync", required: false, run: null, done: (ws) => {
+      if (!ws.hasConfig) return null
+      // `sync: false` or `null` is off, like every setting that turns off with false.
+      try { return syncOf(ws) === undefined ? null : true } catch { return false }
+    } },
 ]
 const STEP_IDS = new Set(START_STEPS.map((step) => step.id))
 
@@ -80,7 +87,7 @@ export const COMMAND_STEPS = {
   "changes mark": false, requests: false, "requests mark": false, workspaces: false, "workspaces untrack": false, "workspaces track": false,
   fix: false, snapshot: false, save: false, idle: false, activity: false, "activity show": false, sessions: false, queue: false,
   "queue report": false, runs: false, "runs add": false, backup: false, export: false, site: false, "site setup": "site", "site publish": false,
-  "site open": "site", "site status": "site", "site pull": "inbox", receive: false, skills: "skills", "skills lint": false, "skills status": false,
+  "site open": "site", "site status": "site", "site pull": "inbox", receive: false, sync: "sync", "sync setup": "sync", skills: "skills", "skills lint": false, "skills status": false,
   "skills candidates": false, "skills adopt": false, "skills dismiss": false, "skills mistake": false, "skills retire": false, "skills upkeep": false,
   agents: "agents", "agents args": false, "agents suggest": false, "agents accept": false, "agents decline": false, "agents set": "agents",
   start: "workspace", update: false, feedback: false, instructions: false, "instructions move": false, mirror: false, "mirror mark": false, "mirror text": false,
@@ -94,7 +101,7 @@ export const SETTING_STEPS = {
   "site.out": false, "site.title": false, "site.mode": false, "site.open": false, "site.journals": false, "site.css": false, "site.id": false,
   "site.onSave": false, "site.inbox": "inbox", "site.publish": "site", "site.inbox.github": false, "site.inbox.schedule": false,
   "site.publish.host": false, "site.publish.project": false, "site.publish.dir": false, "site.publish.open": false, "site.publish.close": false,
-  "site.publish.copy": false, "site.dashboard": false,
+  "site.publish.copy": false, "site.dashboard": false, sync: "sync",
 }
 
 /** Every skill the engine installs, by the step that uses it, or false for daily use. */

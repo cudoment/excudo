@@ -104,6 +104,28 @@ function learnedNames(ws) {
   try { return Object.keys(JSON.parse(readFileSync(join(ws.root, "skills.json"), "utf8")).skills ?? {}).filter((name) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) } catch { return [] }
 }
 
+/**
+ * The graph files (as paths from the graph folder) that changed between `from` (a commit, or null for nothing) and
+ * HEAD, and whose working copy is still what HEAD holds: what arrived from another computer and nobody has touched
+ * since. Two git calls: the files that differ from `from`, minus the files whose working copy differs from HEAD
+ * (git's own judgement, so line-ending conversion is followed too).
+ */
+export function incomingGraphFiles(ws, from) {
+  const found = new Set()
+  if (!inRepository(ws.graphDir)) return found
+  const list = (...args) => git(ws.graphDir, "diff", "--relative", "--name-only", "-z", "--no-renames", ...args, "--").stdout.split("\0").filter(Boolean)
+  const touched = new Set(list("HEAD"))
+  for (const name of list(from ?? EMPTY_TREE, "HEAD")) if (!touched.has(name)) found.add(name.normalize("NFC"))
+  return found
+}
+
+/** The text of a graph file (a path from the graph folder) at a commit, or undefined when that commit lacks it. */
+export function graphFileAt(ws, rev, name) {
+  if (!rev || !inRepository(ws.graphDir)) return undefined
+  const there = git(ws.graphDir, "show", `${rev}:./${name}`)
+  return there.status === 0 ? there.stdout : undefined
+}
+
 /** The graph files with changes not committed yet, as absolute paths. */
 export function changedGraphFiles(ws) {
   if (!inRepository(ws.graphDir)) return []

@@ -80,6 +80,10 @@ personal project.
   shape for the page runtime, the inbox function that keeps each batch as an issue, and
   `src/receive.mjs` (`receive`), which checks each change against its line before writing it, notes
   on today's journal what it cannot place, and records every change by its id.
+- `src/sync.mjs` keeps a workspace in step across computers (`sync`, `excudo sync`): a private GitHub
+  remote, or per-computer git bundles in a folder the Google Drive app syncs. It pulls with a merge
+  (never a rebase or a force), aborts a conflicting merge and names the files, and pushes only from
+  `sync` and from `save` with `sync.auto`; machine-local state lives in `.excudo/sync.json`.
 - `src/skilllint.mjs` defines what a skill is and scores its fitness (`skills lint`);
   `src/skilllint-runner.mjs` runs its known cases concurrently behind the synchronous API;
   `src/learned.mjs` turns recurring requests into candidates and adopts, installs, keeps and retires

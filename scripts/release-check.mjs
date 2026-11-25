@@ -151,9 +151,13 @@ async function main() {
         : packaged ? `package.json excudoReleaseNotes is not current for ${version}; run scripts/changelog.mjs --write ${version}`
         : `CHANGELOG.md has a section for ${version} that lists the newest commit`)
     console.log("Running tests...")
-    const tests = await run("npm", ["test"], { timeout: 600000 })
+    // A full run can take well over ten minutes on a busy machine, so allow twenty.
+    const testLimit = 20 * 60 * 1000
+    const tests = await run("npm", ["test"], { timeout: testLimit })
     const summary = (tests.stdout.match(/(?:ℹ |# )(?:tests|pass|fail) \d+/g) ?? []).join(", ")
-    check("tests", passed(tests), summary || failure(tests))
+    check("tests", passed(tests), tests.timedOut
+      ? `npm test did not finish within ${testLimit / 60000} minutes and was stopped${summary ? ` (partial: ${summary})` : ""}`
+      : summary || failure(tests))
 
     console.log("Rebuilding example...")
     const built = await run(process.execPath, ["bin/excudo.mjs", "build", "--root", "example"])
