@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.1
+
+### Docs
+
+- Align the development notes with the docs pair rule
+- Describe the docs pairs in the contributor rules
+- Point engine messages and the setup skill at docs
+- Move the feature guides to docs
+- Move the command and settings reference and development notes to docs
+- Check document pairs, headings and links
+
+### Release
+
+- Raise the install ranges to 0.9.1
+
 ## 0.9.0
 
 ### Fix

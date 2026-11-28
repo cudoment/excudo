@@ -113,7 +113,7 @@ test("the learning step is done only when a tool's logs are read and the interes
   assert.equal(SETTING_STEPS.conversations, "learn")
   assert.equal(SETTING_STEPS.interests, "learn")
   assert.deepEqual(["excudo-reflect", "excudo-skills"].map((name) => SKILL_STEPS[name]), ["learn", "learn"])
-  for (const locale of ["en", "ko"]) assert.match(LOCALES[locale].start.steps.learn.how, /README/)
+  for (const locale of ["en", "ko"]) assert.match(LOCALES[locale].start.steps.learn.how, /docs\//)
 })
 
 test("the inbox step is done once Vercel holds the token and something brings the changes in", async () => {

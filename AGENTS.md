@@ -97,6 +97,8 @@ personal project.
   refuses a dependency not from the registry before packing; `scripts/linked-build.mjs` builds a
   dependency taken from a local clone before the tests; `scripts/public-tree.mjs` writes this
   repository from the maintainer's clone.
+- `docs/` holds the reference pages, each an English `<name>.md` with its Korean `<name>.ko.md`; the README keeps the start
+  sections. `scripts/docs.mjs` reads the pairs and checks their headings and links. Keep `AGENTS.md` and `CLAUDE.md` out of it.
 
 ## Rules
 
@@ -121,7 +123,7 @@ personal project.
   (Node built-ins and `excudo/skill-kit`); no tool-specific calls. They must work in Claude Code
   and Codex alike.
 - **Keep both languages in step.** A new message or generated word needs an `en` and a `ko` entry;
-  a README change goes into `README.md` and `README.ko.md`; `README.ja.md` and `README.zh-CN.md` are short install guides (no `src/` locales) that follow the install rules, ranges and language line.
+  a change to the README or the docs goes into `README.md` and `README.ko.md`, or into a `docs/<name>.md` page and its `docs/<name>.ko.md` pair (`release:check` and `test/docs.test.mjs` compare their headings and links, and a docs page names no install range); `README.ja.md` and `README.zh-CN.md` are short install guides (no `src/` locales) that follow the install rules, ranges and language line.
 - **Keep the first steps true for a new owner.** `src/start.mjs` holds the steps from nothing to a memo
   in use (`excudo start`, the README's start section, the setup skill). Every command the help shows,
   every setting and every skill is classified there, by the first step it belongs to or `false`. When

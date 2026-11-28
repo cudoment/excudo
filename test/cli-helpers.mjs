@@ -67,7 +67,7 @@ export function releaseFixture(options = {}) {
   const commands = join(root, "commands")
   mkdirSync(commands)
   write(root, "commands/package.json", '{"type":"commonjs"}\n')
-  for (const name of ["release-check.mjs", "dependencies.mjs", "changelog.mjs", "ranges.mjs"]) {
+  for (const name of ["release-check.mjs", "dependencies.mjs", "changelog.mjs", "ranges.mjs", "docs.mjs"]) {
     mkdirSync(join(root, "scripts"), { recursive: true })
     cpSync(join(engine, "scripts", name), join(root, "scripts", name))
   }

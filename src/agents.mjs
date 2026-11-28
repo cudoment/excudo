@@ -8,7 +8,7 @@ import { homedir } from "node:os"
 import { delimiter, join } from "node:path"
 import { writeAtomic, withLock } from "./files.mjs"
 
-// Keep this ordered catalog current by editing it, its tests and both READMEs together.
+// Keep this ordered catalog current by editing it, its tests and the docs (README.md, README.ko.md and docs/) together.
 // Order estimates provider rank; it is not a measured comparison of model quality.
 export const CLAUDE_MODELS = [
   ["claude-fable-5-2", "Fable 5.2"], ["claude-opus-5-5", "Opus 5.5"],

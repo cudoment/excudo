@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url"
 import { parseArgs } from "node:util"
 import { localDependencies } from "./dependencies.mjs"
 import { groupSubjects, ownerActionsOf } from "./changelog.mjs"
+import { brokenLinks, docPairs, headings } from "./docs.mjs"
 import { READMES, expectedRange, staleRanges } from "./ranges.mjs"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
@@ -102,16 +103,23 @@ async function main() {
   check("denylist", passed(denied), deny.skipped ? "no private/denylist.txt to compare with"
     : deny.found?.length ? `a listed word in ${deny.found.slice(0, 5).map((item) => item.line ? `${item.file}:${item.line}` : item.file).join(", ")}`
     : deny.words !== undefined ? `no file holds any of ${deny.words} listed word(s)` : failure(denied))
-  // The two full READMEs keep the same outline; the Japanese and Chinese ones are short guides.
-  const headings = (file) => readFileSync(join(root, file), "utf8").split("\n").filter((line) => /^#{1,3} /.test(line)).length
-  const en = headings("README.md"), ko = headings("README.ko.md")
+  // The English and Korean documents (the two full READMEs and each docs/ pair) keep the same outline, and their
+  // local links resolve; the Japanese and Chinese READMEs are short guides.
+  const outline = (file) => headings(readFileSync(join(root, file), "utf8")).length
+  const pairs = docPairs(root)
+  const missing = pairs.flatMap((pair) => [pair.en, pair.ko]).filter((file) => !existsSync(join(root, file)))
+  const uneven = missing.length ? [] : pairs.filter((pair) => outline(pair.en) !== outline(pair.ko))
+  const links = missing.length ? [] : pairs.flatMap((pair) => [pair.en, pair.ko]).flatMap((file) => brokenLinks(root, file))
   const unlinked = READMES.filter((file) => {
     const first = readFileSync(join(root, file), "utf8").split("\n").slice(0, 6).join("\n")
     return READMES.some((other) => other !== file && !first.includes(`(${other})`))
   })
-  check("readmes", en === ko && !unlinked.length, en !== ko ? `README.md ${en} headings, README.ko.md ${ko} headings`
+  check("readmes", !missing.length && !uneven.length && !links.length && !unlinked.length,
+    missing.length ? `missing: ${missing.join(", ")} (each document needs its English and Korean file)`
+    : uneven.length ? `different headings: ${uneven.map((pair) => `${pair.en} ${outline(pair.en)}, ${pair.ko} ${outline(pair.ko)}`).join("; ")}`
+    : links.length ? `broken links: ${links.slice(0, 5).map((item) => `${item.file}:${item.number} ${item.target} (${item.reason})`).join(", ")}`
     : unlinked.length ? `${unlinked.join(", ")} must link the other READMEs in a language line near the top`
-    : `README.md and README.ko.md have ${en} headings; all four link each other`)
+    : `${pairs.length} document pair(s) have the same headings and working links; all four READMEs link each other`)
 
   // Package contents are cheap to inspect, without waiting for the skill checks to run.
   const names = readdirSync(join(root, "skills"), { withFileTypes: true })

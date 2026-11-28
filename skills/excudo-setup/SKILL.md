@@ -84,7 +84,7 @@ Follow the first incomplete step from the report.
 2. For a new workspace, ask its location and language (`en` or `ko`) if unknown. Install once:
 
    ```sh
-   npx -y excudo@^0.9.0 init <folder> --locale <en|ko>
+   npx -y excudo@^0.9.1 init <folder> --locale <en|ko>
    ```
 
    If `EXCUDO_PACKAGE` is set, use its local folder or tarball instead:
@@ -162,7 +162,7 @@ Follow the first incomplete step from the report.
    For a dashboard at the top of the website's Home (links that open in a new tab, a board that shows
    a node's body to edit and save, numbers on open tasks, finished tasks, agents and scheduled runs),
    add `dashboard: { sections: [...] }` to `site` with the sections the owner wants, in their order,
-   as the engine README's "A dashboard on Home" shows. The board needs the inbox and a node of its
+   as "A dashboard on Home" in the engine's docs/website.md shows. The board needs the inbox and a node of its
    own (`page`); ask the owner where it goes before making a new top node.
 
    The owner makes and pastes the token; never enter, copy or store it. `site pull` brings the changes
@@ -243,7 +243,7 @@ Upkeep keeps a failing listed skill installed, reports its failing checks and ex
 The caller can notify the owner to fix the checks.
 
 12. To keep the workspace in step across the owner's computers (the "Use it on several computers" step of
-    `excudo start`; README: Use it on several computers), ask which method fits and whether the owner
+    `excudo start`; docs/sync.md: Use it on several computers), ask which method fits and whether the owner
     is used to git. Sync only brings the git history to each computer; it needs the workspace to be a
     git repository with a commit.
     - **GitHub**: a private repository is the remote. Best when the owner has a GitHub account or other

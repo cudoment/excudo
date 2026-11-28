@@ -13,7 +13,7 @@ npm ci
 npm test
 ```
 
-Keep generated words in both English and Korean and update both READMEs together; keep the short `README.ja.md` and `README.zh-CN.md` install guides in step with their install rules.
+Keep generated words in both English and Korean and update both READMEs together, and each page of `docs/` with its `.ko.md` pair; keep the short `README.ja.md` and `README.zh-CN.md` install guides in step with their install rules.
 Register new commands and settings in `src/start.mjs`.
 Keep skill procedures, their check scripts and their known cases in step.
 Use `Area: Summary` for English commit subjects, such as `CLI: Explain offline updates`.
